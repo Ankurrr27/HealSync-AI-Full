@@ -28,16 +28,21 @@ import Doctorhomepage from "./pages/doctorhomepage.jsx";
 function Layout() {
   const location = useLocation();
   const authRoutes = ["/login", "/signup"];
-  const hideHeaderFooter = authRoutes.includes(location.pathname);
+
+  // Footer hidden on login, signup, and all profile pages
+  const hideFooter =
+    authRoutes.includes(location.pathname) ||
+    location.pathname.includes("profile");
 
   return (
     <>
-      {!hideHeaderFooter && <Navbar />}
+      {!authRoutes.includes(location.pathname) && <Navbar />}
       <Outlet />
-      {!hideHeaderFooter && <Footer />}
+      {!hideFooter && <Footer />}
     </>
   );
 }
+
 
 // UserLayout for dynamic user routes using custom_id
 function UserLayout() {

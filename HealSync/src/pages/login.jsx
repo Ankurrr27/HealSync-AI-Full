@@ -32,7 +32,11 @@ const Login = () => {
     navigate(`/patient/${res.data.user.custom_id}/profile`);
   } else if (role === "doctor" && res.data.user.custom_id) {
     navigate(`/doctor/${res.data.user.custom_id}/profile`);
-  } else {
+  }else if (role === "admin" && res.data.user.custom_id) {
+    navigate(`/admin/${res.data.user.custom_id}/profile`);
+  }
+  
+  else {
     navigate("/"); // fallback
   }
 }, 500);

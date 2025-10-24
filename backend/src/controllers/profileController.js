@@ -1,5 +1,5 @@
-import { db } from '../db.js';
-import fs from 'fs';
+import { db } from "../db.js";
+import fs from "fs";
 
 // GET profile (auto-create if missing)
 export const getProfile = async (req, res) => {
@@ -8,60 +8,61 @@ export const getProfile = async (req, res) => {
 
     // Check if user exists
     const [userCheck] = await db.execute(
-      'SELECT custom_id FROM users WHERE custom_id = ?',
+      "SELECT custom_id FROM users WHERE custom_id = ?",
       [custom_id]
     );
     if (!userCheck.length)
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
 
     // Check if profile exists
     const [rows] = await db.execute(
-      'SELECT * FROM user_profiles WHERE custom_id = ?',
+      "SELECT * FROM user_profiles WHERE custom_id = ?",
       [custom_id]
     );
 
     if (!rows.length) {
-      await db.execute('INSERT INTO user_profiles (custom_id) VALUES (?)', [
+      await db.execute("INSERT INTO user_profiles (custom_id) VALUES (?)", [
         custom_id,
       ]);
       return res.json({
         custom_id,
-        full_name: '',
-        date_of_birth: '',
-        gender: 'Male',
-        blood_group: '',
-        primary_doctor: '',
-        mobile_number: '',
-        email: '',
-        current_address: '',
+        full_name: "",
+        date_of_birth: "",
+        gender: "Male",
+        blood_group: "",
+        primary_doctor: "",
+        mobile_number: "",
+        email: "",
+        current_address: "",
         profile_image: null,
         profile_url: null,
       });
     }
 
     const profile = rows[0];
+    const baseURL = "http://localhost:5000";
     profile.profile_url = profile.profile_image
-      ? `http://localhost:5000/${profile.profile_image}`
+      ? `${baseURL}/${profile.profile_image.replace(/\\/g, "/")}`
       : null;
 
     res.json(profile);
   } catch (err) {
-    console.error('GET profile error:', err);
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error("GET profile error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
 // UPSERT profile
 export const upsertProfile = async (req, res) => {
   try {
-    const custom_id = req.params.custom_id;
+    const { custom_id } = req.params;
     if (!custom_id)
-      return res.status(400).json({ message: 'custom_id is required' });
+      return res.status(400).json({ message: "custom_id is required" });
 
     const {
       full_name = null,
       date_of_birth = null,
-      gender = 'Male',
+      gender = "Male",
       blood_group = null,
       primary_doctor = null,
       mobile_number = null,
@@ -71,18 +72,18 @@ export const upsertProfile = async (req, res) => {
 
     // Validate user exists
     const [userExists] = await db.execute(
-      'SELECT custom_id FROM users WHERE custom_id = ?',
+      "SELECT custom_id FROM users WHERE custom_id = ?",
       [custom_id]
     );
     if (!userExists.length)
-      return res.status(400).json({ message: 'User does not exist' });
+      return res.status(400).json({ message: "User does not exist" });
 
     // Handle image
-    const profile_image = req.file ? req.file.path.replace(/\\/g, '/') : null;
+    const profile_image = req.file ? req.file.path.replace(/\\/g, "/") : null;
 
     // Delete old image if uploading a new one
     const [existing] = await db.execute(
-      'SELECT profile_image FROM user_profiles WHERE custom_id = ?',
+      "SELECT profile_image FROM user_profiles WHERE custom_id = ?",
       [custom_id]
     );
     if (
@@ -94,10 +95,10 @@ export const upsertProfile = async (req, res) => {
       fs.unlinkSync(existing[0].profile_image);
     }
 
-    // Convert date_of_birth to MySQL DATE format (YYYY-MM-DD)
-    let dob = date_of_birth ? date_of_birth.split('T')[0] : undesfined;
+    // Convert date_of_birth to MySQL DATE format
+    const dob = date_of_birth ? date_of_birth.split("T")[0] : null;
 
-    // UPSERT
+    // UPSERT query
     await db.execute(
       `INSERT INTO user_profiles 
         (custom_id, full_name, date_of_birth, gender, blood_group, primary_doctor, mobile_number, email, current_address, profile_image)
@@ -115,7 +116,7 @@ export const upsertProfile = async (req, res) => {
       [
         custom_id,
         full_name,
-        dob || null,
+        dob,
         gender,
         blood_group,
         primary_doctor,
@@ -126,15 +127,17 @@ export const upsertProfile = async (req, res) => {
       ]
     );
 
+    const baseURL = "http://localhost:5000";
     const profile_url = profile_image
-      ? `http://localhost:5000/${profile_image}`
+      ? `${baseURL}/${profile_image.replace(/\\/g, "/")}`
       : null;
+
     res.json({
-      message: 'Profile saved successfully!',
+      message: "Profile saved successfully!",
       profile_image: profile_url,
     });
   } catch (err) {
-    console.error('POST profile upsert error:', err);
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error("POST profile upsert error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
