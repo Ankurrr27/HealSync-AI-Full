@@ -1,19 +1,19 @@
 import express from "express";
-import {
-  getDoctorAppointments,
-  getUserAppointments,
-  bookAppointment,
-  updateAppointment
-} from "../controllers/appointmentsController.js";
+import multer from "multer";
+import path from "path";
+import { upsertDoctorProfile, getDoctorProfile } from "../controllers/doctorProfileController.js";
 
 const router = express.Router();
 
-// User routes
-router.get("/user/:userId", getUserAppointments);
-router.post("/book", bookAppointment);
+// Multer config for profile image
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "uploads/doctor_profiles/"),
+  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
+});
+const upload = multer({ storage });
 
-// Doctor routes
-router.get("/doctor/:doctorId", getDoctorAppointments);
-router.patch("/:appointmentId", updateAppointment);
+// Routes
+router.post("/create", upload.single("profile_image"), upsertDoctorProfile);
+router.get("/:custom_id", getDoctorProfile);
 
 export default router;
