@@ -2,311 +2,296 @@ import React, { useEffect, useState } from "react";
 import { useOutletContext, Link } from "react-router-dom";
 import axios from "axios";
 import {
-    ArrowRightIcon,
-    DocumentTextIcon,
-    CalendarDaysIcon,
-    UserCircleIcon,
-    BellAlertIcon,
-    LifebuoyIcon, 
-    ClipboardDocumentCheckIcon,
-    ShieldCheckIcon,
-    HeartIcon, 
-    CurrencyDollarIcon, 
-    Cog6ToothIcon, 
-    ChatBubbleLeftRightIcon, // New icon for communication
-    ReceiptRefundIcon // New icon for billing module
+  DocumentTextIcon,
+  CalendarDaysIcon,
+  UserCircleIcon,
+  ClipboardDocumentCheckIcon,
+  HeartIcon,
+  CurrencyDollarIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
-// IMPORTANT: Define your backend base URL
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "http://localhost:5000/api"; // For API calls
+const STATIC_BASE_URL = "http://localhost:5000"; // For images
 
-// --- MOCK DATA FOR THE CORE DASHBOARD CARDS ---
-const mockSummaryData = [
-    { 
-        label: "Medical Records", 
-        value: 18, 
-        unit: "documents updated", 
-        to: "records", 
-        icon: DocumentTextIcon, 
-        color: "text-indigo-600",
-        bg: "bg-indigo-50",
-        description: "Latest lab results and primary care notes available for review."
-    },
-    { 
-        label: "Next Appointment", 
-        value: "Nov 5, 2025", 
-        unit: "10:00 AM",
-        to: "appointments", 
-        icon: CalendarDaysIcon, 
-        color: "text-green-600",
-        bg: "bg-green-50",
-        description: "Dr. Sharma, scheduled for a routine annual telehealth visit."
-    },
-    { 
-        label: "Profile Completion", 
-        value: "75%", 
-        unit: "complete", 
-        to: "profile", 
-        icon: ClipboardDocumentCheckIcon, 
-        color: "text-yellow-600",
-        bg: "bg-yellow-50",
-        description: "Action required: Insurance and emergency contact details need updating."
-    },
-];
+// Reusable Info Card
+const InfoCard = ({ label, value, unit, description, icon: Icon, color, bg, to }) => (
+  <Link
+    to={to}
+    className={`block ${bg} p-5 rounded-2xl border border-gray-200 shadow-lg hover:shadow-2xl transition duration-500 transform hover:-translate-y-1`}
+  >
+    <div className="flex justify-between items-center">
+      <Icon className={`w-7 h-7 ${color}`} />
+      <p className="text-xs font-semibold text-gray-600 uppercase">{label}</p>
+    </div>
+    <div className="mt-3 border-t pt-3 border-gray-200">
+      <span className={`text-3xl font-extrabold ${color}`}>{value}</span>
+      {unit && <span className="text-sm text-gray-500 ml-2">{unit}</span>}
+    </div>
+    {description && <p className="text-sm text-gray-500 mt-2 truncate">{description}</p>}
+  </Link>
+);
 
-// --- MOCK DATA FOR THE QUICK STATS CARD ---
-const mockQuickStats = [
-    { label: "Last Vitals", value: "2 days ago", icon: HeartIcon, color: "text-rose-500", link: "vitals" },
-    { label: "Pending Bills", value: 1, unit: "invoice", icon: CurrencyDollarIcon, color: "text-teal-600", link: "billing" },
-    { label: "Last Prescription", value: "Citalopram", icon: DocumentTextIcon, color: "text-purple-600", link: "prescriptions" },
-    { label: "Primary Care", value: "Dr. J. Wells", icon: UserCircleIcon, color: "text-blue-600", link: "team" },
-];
+// Reusable Quick Action Button
+const ActionButton = ({ label, to, icon: Icon, bg, color }) => (
+  <Link
+    to={to}
+    className={`flex items-center p-4 ${bg} rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1`}
+  >
+    <Icon className={`w-6 h-6 ${color} mr-3`} />
+    <span className="font-semibold text-gray-700 group-hover:text-gray-900">{label}</span>
+  </Link>
+);
+
+// Doctor Card
+const DoctorCard = ({ doctor }) => (
+  <div className="bg-white p-4 rounded-2xl shadow-md flex items-center space-x-4 hover:shadow-xl transition transform hover:-translate-y-1">
+    <img
+      src={doctor.profile_image ? `${STATIC_BASE_URL}/${doctor.profile_image}` : "https://via.placeholder.com/80"}
+      alt={doctor.full_name}
+      className="w-20 h-20 rounded-full border-2 border-indigo-100 object-cover"
+    />
+    <div className="flex-1">
+      <h3 className="text-lg font-bold text-gray-800">{doctor.full_name}</h3>
+      <p className="text-sm text-gray-500">{doctor.specialization || "General Practitioner"}</p>
+      <p className="text-xs text-gray-400">
+        Next Appointment: {doctor.next_appointment_date ? new Date(doctor.next_appointment_date).toLocaleDateString() : "N/A"}
+      </p>
+    </div>
+    <Link to={`/doctor/${doctor.custom_id}`} className="text-indigo-600 font-semibold hover:underline text-sm">
+      View Profile
+    </Link>
+  </div>
+);
 
 const PatientHomepage = () => {
-    // Fetches custom_id from the routing context (simulating authentication)
-    const { custom_id } = useOutletContext(); 
-    
-    const [userName, setUserName] = useState("Patient");
-    const [isNameLoading, setIsNameLoading] = useState(true);
-    const [fetchError, setFetchError] = useState(false);
+  const { custom_id } = useOutletContext();
 
-    // --- Data Fetching Effect (User Name) ---
-    useEffect(() => {
-        const fetchUserName = async () => {
-            if (!custom_id) {
-                setUserName("Patient");
-                setIsNameLoading(false);
-                return;
-            }
-            try {
-                // Functional API call (mocked to fail for demonstration if needed)
-                const res = await axios.get(`${API_BASE_URL}/api/profile/${custom_id}`);
-                if (res.data && res.data.full_name) {
-                    setUserName(res.data.full_name); 
-                    setFetchError(false);
-                } else {
-                    setUserName("Unidentified User");
-                }
-            } catch (err) {
-                console.error("Failed to fetch user name:", err);
-                setUserName("Error Loading Name");
-                setFetchError(true);
-            } finally {
-                setIsNameLoading(false);
-            }
-        };
-        fetchUserName();
-    }, [custom_id]);
+  const [userProfile, setUserProfile] = useState(null);
+  const [userRecords, setUserRecords] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [frequentDoctors, setFrequentDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-    // Conditional Rendering for the User's Name
-    const renderUserName = () => {
-        if (isNameLoading) {
-            return <span className="font-medium ml-2 text-gray-500">Loading...</span>;
-        }
-        if (fetchError) {
-            return <span className="font-bold ml-2 text-red-500">{userName}</span>;
-        }
-        return <span className="font-bold ml-2 text-indigo-700">{userName.split(' ')[0] + (userName.includes(' ') ? ' ' + userName.split(' ')[1] : '')}</span>; // Use only first two words
+  useEffect(() => {
+    if (!custom_id) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(false);
+      try {
+        const [profileRes, recordsRes, appointmentsRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/profile/${custom_id}`),
+          axios.get(`${API_BASE_URL}/records/${custom_id}`),
+          axios.get(`${API_BASE_URL}/appointments/user/${custom_id}`),
+        ]);
+
+        setUserProfile(profileRes.data);
+        setUserRecords(recordsRes.data);
+        setAppointments(appointmentsRes.data);
+
+        const doctorIds = [...new Set(appointmentsRes.data.map(a => a.doctor_id))];
+        const doctorProfiles = await Promise.all(
+          doctorIds.map(id =>
+            axios.get(`${API_BASE_URL}/doctor/${id}`).then(res => {
+              const doctorAppointments = appointmentsRes.data.filter(a => a.doctor_id === id);
+              const nextAppointment = doctorAppointments.sort((a, b) => new Date(a.appointment_date) - new Date(b.appointment_date))[0];
+              return { ...res.data, next_appointment_date: nextAppointment?.appointment_date };
+            })
+          )
+        );
+        setFrequentDoctors(doctorProfiles);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
     };
 
+    fetchData();
+  }, [custom_id]);
 
-    return (
-        <div className="p-4 sm:p-8 max-w-6xl mx-auto bg-gray-50 min-h-screen"> 
-            
-            <div className="space-y-6 lg:space-y-8">
-                
-                {/* ------------------------------------------------------------------ */}
-                {/* --- 1. WELCOME & ALERT BLOCK (Highly Themed) --- */}
-                {/* ------------------------------------------------------------------ */}
-                <div className="bg-white p-5 md:p-8 rounded-2xl shadow-xl border-t-4 border-indigo-600">
-                    <div className="flex justify-between items-start border-b pb-4 mb-4">
-                        <div className="flex flex-col">
-                            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800">
-                                Hello, 
-                                {renderUserName()}
-                            </h1>
-                            <p className="text-sm text-gray-500 mt-1">
-                                Your **Personal Health Dashboard**. Everything is secure and up-to-date.
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">
-                                Patient ID: <span className="font-mono font-medium">{custom_id || "N/A"}</span>
-                            </p>
-                        </div>
-                        <Link
-                            to="settings"
-                            className="flex items-center text-xs sm:text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full hover:bg-gray-200 transition ring-1 ring-gray-300"
-                        >
-                            <Cog6ToothIcon className="w-4 h-4 mr-1 text-gray-500" /> Settings
-                        </Link>
-                    </div>
-                    
-                    {/* Integrated Critical Alert Section (Highly Actionable) */}
-                    <div className="p-4 bg-red-100 border border-red-400 rounded-xl flex items-start space-x-4 shadow-inner">
-                        <BellAlertIcon className="w-6 h-6 text-red-700 flex-shrink-0 mt-0.5" />
-                        <div>
-                            <h2 className="text-base font-extrabold text-red-800 uppercase tracking-wider">Urgent Follow-up Required</h2>
-                            <p className="text-sm text-red-700 mt-1">
-                                New Lab Result Alert: **Glucose level (155 mg/dL)** is outside the normal range. Please schedule a follow-up consultation with your PCP.
-                            </p>
-                            <Link 
-                                to={`appointments`}
-                                className="mt-2 inline-flex items-center text-sm font-bold text-red-600 hover:text-red-800 transition"
-                            >
-                                Book Consultation Now <ArrowRightIcon className="ml-1 h-4 w-4" />
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+  if (loading)
+  return (
+    <div className="p-4 max-w-6xl mx-auto space-y-4">
+      {/* Skeleton for Welcome Section */}
+      <div className="bg-gray-200 rounded-2xl h-24 animate-pulse"></div>
 
-                {/* ------------------------------------------------------------------ */}
-                {/* --- 2. PRIMARY DATA SUMMARY GRID (Themed Cards) --- */}
-                {/* ------------------------------------------------------------------ */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                    {mockSummaryData.map((item, index) => (
-                        <Link 
-                            key={index}
-                            to={item.to}
-                            className={`block ${item.bg} p-5 rounded-2xl border border-gray-200 shadow-lg transition duration-300 hover:shadow-2xl hover:ring-2 hover:ring-offset-2 hover:ring-indigo-500 group`}
-                        >
-                            <div className="flex justify-between items-center">
-                                <item.icon className={`w-7 h-7 ${item.color} flex-shrink-0`} />
-                                <p className="text-xs font-semibold text-gray-600 uppercase tracking-widest">{item.label}</p>
-                            </div>
-                            
-                            <div className="mt-3 border-t pt-3 border-gray-200">
-                                <span className={`text-3xl font-extrabold ${item.color}`}>{item.value}</span>
-                                {item.unit && <span className="text-sm font-semibold text-gray-500 ml-2">{item.unit}</span>}
-                            </div>
-                            
-                            <p className="text-sm text-gray-600 mt-2">{item.description}</p>
-                            <span className="mt-3 block text-xs font-bold text-indigo-700 group-hover:underline">
-                                Go to {item.label} $\rightarrow$
-                            </span>
-                        </Link>
-                    ))}
-                </div>
+      {/* Skeleton for Profile Card */}
+      <div className="bg-gray-200 rounded-2xl h-32 md:h-36 animate-pulse"></div>
 
-                {/* ------------------------------------------------------------------ */}
-                {/* --- 3. QUICK STATS & BILLING CARD (Highly Detailed Grid) --- */}
-                {/* ------------------------------------------------------------------ */}
-                <div className="bg-white p-5 rounded-2xl shadow-xl border border-gray-200">
-                    <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">Your Health Snapshot</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {mockQuickStats.map((stat, index) => (
-                            <Link 
-                                key={index}
-                                to={stat.link}
-                                className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition group"
-                            >
-                                <div className="flex items-center space-x-3 mb-2">
-                                    <stat.icon className={`w-5 h-5 ${stat.color} flex-shrink-0`} />
-                                    <p className="text-xs font-medium text-gray-500 uppercase">{stat.label}</p>
-                                </div>
-                                <p className="text-lg font-extrabold text-gray-800 truncate">
-                                    {stat.value}
-                                </p>
-                                {stat.unit && <span className="text-xs text-gray-500 mt-0.5">{stat.unit}</span>}
-                            </Link>
-                        ))}
-                    </div>
-                    <Link 
-                        to="billing" 
-                        className="mt-5 block text-right text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition"
-                    >
-                        View Billing & Payments $\rightarrow$
-                    </Link>
-                </div>
-                
-                {/* ------------------------------------------------------------------ */}
-                {/* --- 4. CORE MODULES (Expanded Action Grid) --- */}
-                {/* ------------------------------------------------------------------ */}
-                <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
-                    Direct Access Modules
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    
-                    {/* Module 1: Profile */}
-                    <Link to="profile" className="flex items-center p-4 sm:p-5 bg-white border border-gray-200 rounded-xl transition hover:bg-indigo-50 group shadow-sm hover:shadow-md">
-                        <UserCircleIcon className="w-7 h-7 text-indigo-700 mr-4 flex-shrink-0" />
-                        <div>
-                            <span className="font-semibold text-gray-800 text-base">Patient Profile & Details</span>
-                            <p className="text-xs text-gray-500 mt-1">Manage personal info, contacts, and insurance.</p>
-                        </div>
-                        <ArrowRightIcon className="w-5 h-5 ml-auto text-gray-400 group-hover:text-indigo-600 transition" />
-                    </Link>
-                    
-                    {/* Module 2: Records */}
-                    <Link to="records" className="flex items-center p-4 sm:p-5 bg-white border border-gray-200 rounded-xl transition hover:bg-indigo-50 group shadow-sm hover:shadow-md">
-                        <DocumentTextIcon className="w-7 h-7 text-indigo-700 mr-4 flex-shrink-0" />
-                        <div>
-                            <span className="font-semibold text-gray-800 text-base">Digital Medical Records</span>
-                            <p className="text-xs text-gray-500 mt-1">View lab results, scans, prescriptions, and documents.</p>
-                        </div>
-                        <ArrowRightIcon className="w-5 h-5 ml-auto text-gray-400 group-hover:text-indigo-600 transition" />
-                    </Link>
+      {/* Skeleton for Summary Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 mt-4">
+        {Array(4)
+          .fill(0)
+          .map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-gray-200 h-28 rounded-xl animate-pulse"
+            ></div>
+          ))}
+      </div>
 
-                    {/* Module 3: Appointments */}
-                    <Link to="appointments" className="flex items-center p-4 sm:p-5 bg-white border border-gray-200 rounded-xl transition hover:bg-indigo-50 group shadow-sm hover:shadow-md">
-                        <CalendarDaysIcon className="w-7 h-7 text-indigo-700 mr-4 flex-shrink-0" />
-                        <div>
-                            <span className="font-semibold text-gray-800 text-base">Schedule & Manage Visits</span>
-                            <p className="text-xs text-gray-500 mt-1">Book new or view/cancel existing appointments and telehealth sessions.</p>
-                        </div>
-                        <ArrowRightIcon className="w-5 h-5 ml-auto text-gray-400 group-hover:text-indigo-600 transition" />
-                    </Link>
+      {/* Skeleton for Quick Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        {Array(4)
+          .fill(0)
+          .map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-gray-200 h-16 rounded-xl animate-pulse"
+            ></div>
+          ))}
+      </div>
+    </div>
+  );
 
-                    {/* Module 4: Billing & Payments (New dedicated module) */}
-                    <Link to="billing" className="flex items-center p-4 sm:p-5 bg-white border border-gray-200 rounded-xl transition hover:bg-indigo-50 group shadow-sm hover:shadow-md">
-                        <ReceiptRefundIcon className="w-7 h-7 text-indigo-700 mr-4 flex-shrink-0" />
-                        <div>
-                            <span className="font-semibold text-gray-800 text-base">Billing & Payments</span>
-                            <p className="text-xs text-gray-500 mt-1">Review invoices, manage payment methods, and insurance claims.</p>
-                        </div>
-                        <ArrowRightIcon className="w-5 h-5 ml-auto text-gray-400 group-hover:text-indigo-600 transition" />
-                    </Link>
-                    
-                    {/* Module 5: Messaging (Communication) */}
-                    <Link to="messages" className="flex items-center p-4 sm:p-5 bg-white border border-gray-200 rounded-xl transition hover:bg-indigo-50 group shadow-sm hover:shadow-md">
-                        <ChatBubbleLeftRightIcon className="w-7 h-7 text-indigo-700 mr-4 flex-shrink-0" />
-                        <div>
-                            <span className="font-semibold text-gray-800 text-base">Secure Messaging</span>
-                            <p className="text-xs text-gray-500 mt-1">Communicate directly with your care team securely.</p>
-                        </div>
-                        <ArrowRightIcon className="w-5 h-5 ml-auto text-gray-400 group-hover:text-indigo-600 transition" />
-                    </Link>
 
-                    {/* Module 6: Support */}
-                    <Link to="support" className="flex items-center p-4 sm:p-5 bg-white border border-gray-200 rounded-xl transition hover:bg-indigo-50 group shadow-sm hover:shadow-md">
-                        <LifebuoyIcon className="w-7 h-7 text-indigo-700 mr-4 flex-shrink-0" />
-                        <div>
-                            <span className="font-semibold text-gray-800 text-base">Help & Technical Support</span>
-                            <p className="text-xs text-gray-500 mt-1">Get immediate help, read FAQs, or submit a technical ticket.</p>
-                        </div>
-                        <ArrowRightIcon className="w-5 h-5 ml-auto text-gray-400 group-hover:text-indigo-600 transition" />
-                    </Link>
-                </div>
-                
-                {/* ------------------------------------------------------------------ */}
-                {/* --- 5. FOOTER SECURITY/COMPLIANCE BAR (Enhanced) --- */}
-                {/* ------------------------------------------------------------------ */}
-                <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200 text-sm text-gray-700 mt-8 shadow-inner">
-                    <div className="flex justify-between items-center flex-wrap">
-                        <p className="flex items-center text-xs sm:text-sm font-medium mb-2 sm:mb-0 text-indigo-700">
-                            <ShieldCheckIcon className="w-4 h-4 inline mr-2 text-green-600 flex-shrink-0" />
-                            **Data Security:** All information is secured and compliant with **HIPAA** and **GDPR**.
-                        </p>
-                        <Link 
-                            to="settings/security"
-                            className="font-bold text-indigo-600 hover:text-indigo-800 transition text-xs sm:text-sm"
-                        >
-                            View Compliance Details $\rightarrow$
-                        </Link>
-                    </div>
-                </div>
+  if (error)
+    return <div className="p-4 text-red-600 text-center">Failed to load data.</div>;
 
-            </div>
+  const name = userProfile?.full_name || "Patient Name";
+  const nextAppointment = appointments[0];
+  const daysToNextAppointment = nextAppointment ? Math.max(0, Math.ceil((new Date(nextAppointment.appointment_date) - new Date()) / (1000 * 60 * 60 * 24))) : null;
+
+  const summaryData = [
+    {
+      label: "Medical Records",
+      value: userRecords.length,
+      unit: "documents",
+      to: "records",
+      icon: DocumentTextIcon,
+      color: "text-indigo-600",
+      bg: "bg-indigo-50",
+      description: "Latest lab results, prescriptions and primary care notes.",
+    },
+    {
+      label: "Next Appointment",
+      value: nextAppointment ? new Date(nextAppointment.appointment_date).toLocaleDateString() : "N/A",
+      unit: nextAppointment ? new Date(nextAppointment.appointment_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "",
+      to: "appointments",
+      icon: CalendarDaysIcon,
+      color: "text-green-600",
+      bg: "bg-green-50",
+      description: nextAppointment ? `In ${daysToNextAppointment} days with Dr. ${nextAppointment.doctor_id}` : "No upcoming appointments",
+    },
+    {
+      label: "Profile Completion",
+      value: userProfile ? "75%" : "0%",
+      unit: "complete",
+      to: "profile",
+      icon: ClipboardDocumentCheckIcon,
+      color: "text-yellow-600",
+      bg: "bg-yellow-50",
+      description: "Update insurance, emergency contacts, and personal info.",
+    },
+    {
+      label: "Latest Lab Result",
+      value: userRecords[0]?.file_name || "N/A",
+      unit: "",
+      to: "records",
+      icon: HeartIcon,
+      color: "text-rose-600",
+      bg: "bg-rose-50",
+      description: userRecords[0] ? `Checked on ${new Date(userRecords[0].created_at).toLocaleDateString()}` : "No lab records yet",
+    },
+  ];
+
+  const quickActions = [
+    { label: "Book Appointment", to: "appointments", icon: CalendarDaysIcon, bg: "bg-blue-50", color: "text-blue-600" },
+    { label: "View Records", to: "records", icon: DocumentTextIcon, bg: "bg-indigo-50", color: "text-indigo-600" },
+    { label: "Update Profile", to: "profile", icon: UserCircleIcon, bg: "bg-yellow-50", color: "text-yellow-600" },
+    { label: "Billing & Payments", to: "", icon: CurrencyDollarIcon, bg: "bg-teal-50", color: "text-teal-600" },
+  ];
+
+  return (
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto bg-gray-50 min-h-screen space-y-6">
+      {/* Welcome Section */}
+      <div className="bg-white p-5 md:p-8 rounded-2xl shadow-xl border-t-4 border-indigo-600 flex justify-between items-start animate-fadeIn">
+        <div className="flex flex-col">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800">
+            Hello, <span className="text-indigo-700">{name}</span>
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">Your Personal Health Dashboard</p>
+          <p className="text-xs text-gray-400 mt-1">Patient ID: <span className="font-mono font-medium">{custom_id}</span></p>
         </div>
-    );
+        <Link to="settings" className="flex items-center text-xs sm:text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full hover:bg-gray-200 transition ring-1 ring-gray-300">
+          <Cog6ToothIcon className="w-4 h-4 mr-1 text-gray-500" /> Settings
+        </Link>
+      </div>
+
+      {/* Profile Card */}
+      <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-200 flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6 animate-fadeIn">
+        <div className="flex-shrink-0">
+          <img
+            src={userProfile?.profile_image ? `${STATIC_BASE_URL}/${userProfile.profile_image}` : "https://via.placeholder.com/120"}
+            alt="Profile"
+            className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-indigo-100 shadow-sm object-cover"
+          />
+        </div>
+        <div className="flex-1 space-y-1">
+          <h2 className="text-2xl font-bold text-gray-800">{name}</h2>
+          <p className="text-sm text-gray-500">Email: <span className="font-medium">{userProfile?.email || "Not provided"}</span></p>
+          <p className="text-sm text-gray-500">Phone: <span className="font-medium">{userProfile?.phone || "Not provided"}</span></p>
+          <p className="text-sm text-gray-500">Primary Doctor: <span className="font-medium">{userProfile?.primary_doctor || "N/A"}</span></p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link to="profile/update" className="bg-indigo-600 text-white px-4 py-2 rounded-xl shadow hover:bg-indigo-700 transition text-sm font-semibold">Edit Profile</Link>
+            <Link to="appointments" className="bg-green-600 text-white px-4 py-2 rounded-xl shadow hover:bg-green-700 transition text-sm font-semibold">View Appointments</Link>
+            <Link to="records" className="bg-purple-600 text-white px-4 py-2 rounded-xl shadow hover:bg-purple-700 transition text-sm font-semibold">View Records</Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Frequently Visited Doctors */}
+      {frequentDoctors.length > 0 && (
+        <div className="space-y-4 animate-fadeIn">
+          <h2 className="text-xl font-bold text-gray-800">Frequently Visited Doctors</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {frequentDoctors.map((doctor) => (
+              <DoctorCard key={doctor.custom_id} doctor={doctor} />
+            ))}
+          </div>
+        </div>
+      )}
+
+     {/* Summary Grid */}
+<div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 animate-fadeIn">
+  {summaryData.map((item, idx) => (
+    <Link
+      key={idx}
+      to={item.to}
+      className={`block ${item.bg} p-4 rounded-xl border border-gray-200 shadow hover:shadow-lg transition transform hover:-translate-y-1`}
+    >
+      <div className="flex justify-between items-center">
+        <item.icon className={`w-6 h-6 ${item.color}`} />
+        <p className="text-[10px] font-semibold text-gray-600 uppercase">
+          {item.label}
+        </p>
+      </div>
+      <div className="mt-2 border-t pt-2 border-gray-200 flex items-baseline">
+        <span className={`text-2xl font-bold ${item.color}`}>{item.value}</span>
+        {item.unit && (
+          <span className="text-xs text-gray-500 ml-1">{item.unit}</span>
+        )}
+      </div>
+      {item.description && (
+        <p className="text-xs text-gray-500 mt-1 truncate">{item.description}</p>
+      )}
+    </Link>
+  ))}
+</div>
+
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 animate-fadeIn">
+        {quickActions.map((action, idx) => (
+          <ActionButton key={idx} {...action} />
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default PatientHomepage;
