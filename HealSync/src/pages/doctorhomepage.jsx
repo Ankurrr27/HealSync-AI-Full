@@ -2,239 +2,155 @@ import React, { useEffect, useState } from "react";
 import { useOutletContext, Link } from "react-router-dom";
 import axios from "axios";
 import {
-  ArrowRightIcon,
   UserCircleIcon,
-  DocumentTextIcon,
   CalendarDaysIcon,
-  BellAlertIcon,
-  LifebuoyIcon,
   ClipboardDocumentCheckIcon,
-  HeartIcon,
-  CurrencyDollarIcon,
+  ShieldCheckIcon,
   Cog6ToothIcon,
-  ChatBubbleLeftRightIcon,
-  ReceiptRefundIcon,
-  ShieldCheckIcon
+  ArrowRightIcon,
+  ClockIcon
 } from "@heroicons/react/24/outline";
 
 const API_BASE_URL = "http://localhost:5000";
 
-const DoctorHomepage = () => {
-  // Get custom_id safely
-  const outletContext = useOutletContext() || {};
-  const custom_id = outletContext.custom_id || null;
+// Summary Card
+const SummaryCard = ({ label, value, icon: Icon, colorClass, bgClass, link }) => (
+  <Link to={link} className={`${bgClass} p-5 rounded-2xl border border-gray-200 shadow hover:shadow-lg transition transform hover:-translate-y-1 flex flex-col`}>
+    <div className="flex items-center justify-between mb-2">
+      <Icon className={`w-7 h-7 ${colorClass}`} />
+      <span className="text-xs font-semibold text-gray-500 uppercase">{label}</span>
+    </div>
+    <span className={`text-2xl font-bold ${colorClass}`}>{value}</span>
+  </Link>
+);
 
-  const [doctorName, setDoctorName] = useState("Doctor");
-  const [profile, setProfile] = useState({});
+// Appointment Card
+const AppointmentCard = ({ appt }) => (
+  <div className="bg-white p-4 rounded-2xl shadow-md hover:shadow-lg transition transform hover:-translate-y-1 flex flex-col space-y-1">
+    <div className="flex justify-between items-center">
+      <span className="font-semibold text-gray-800">{appt.patient_name}</span>
+      <span className={`text-xs font-medium px-2 py-1 rounded-full ${appt.status === 'confirmed' ? 'bg-green-100 text-green-800' : appt.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+        {appt.status.toUpperCase()}
+      </span>
+    </div>
+    <p className="text-xs text-gray-500">Reason: {appt.reason}</p>
+    {appt.appointment_date && (
+      <p className="text-xs text-gray-500 flex items-center gap-1">
+        <ClockIcon className="w-3 h-3 text-gray-400" />
+        {new Date(appt.appointment_date).toLocaleString()}
+      </p>
+    )}
+    <Link to={`/appointments/${appt.id}`} className="text-indigo-600 text-sm font-semibold flex items-center mt-1">
+      View Details <ArrowRightIcon className="w-3 h-3 ml-1" />
+    </Link>
+  </div>
+);
+
+// Patient Card
+const PatientCard = ({ patient }) => (
+  <div className="bg-white p-4 rounded-2xl shadow-md flex flex-col items-center space-y-2 hover:shadow-lg transition transform hover:-translate-y-1">
+    <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+      {patient.profile_image ? (
+        <img src={`${API_BASE_URL}/${patient.profile_image}`} alt={patient.full_name} className="w-full h-full object-cover" />
+      ) : (
+        <UserCircleIcon className="w-14 h-14 text-gray-400" />
+      )}
+    </div>
+    <h3 className="text-sm font-semibold text-gray-800">{patient.full_name}</h3>
+    <p className="text-xs text-gray-500">{patient.age ? `${patient.age} yrs` : ""} {patient.gender ? `| ${patient.gender}` : ""}</p>
+    <Link to={`/patients/${patient.custom_id}`} className="text-indigo-600 text-sm font-semibold flex items-center mt-1">
+      View Profile <ArrowRightIcon className="w-3 h-3 ml-1" />
+    </Link>
+  </div>
+);
+
+const DoctorHomepage = () => {
+  const { custom_id } = useOutletContext() || {};
+  const [doctor, setDoctor] = useState({});
   const [appointments, setAppointments] = useState([]);
-  const [patientsCount, setPatientsCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!custom_id) return;
 
-    const fetchDoctorData = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/doctor/${custom_id}`);
-        console.log("Doctor Data:", res.data);
+        const profileRes = await axios.get(`${API_BASE_URL}/api/doctor/${custom_id}`);
+        setDoctor(profileRes.data);
 
-        // Adjust based on backend structure
-        const doctorData = res.data.doctor || res.data; 
-        setProfile(doctorData);
+        const apptRes = await axios.get(`${API_BASE_URL}/api/appointments/doctor/${custom_id}`);
+        setAppointments(apptRes.data || []);
 
-        // Name field could be full_name or name
-        setDoctorName(doctorData.full_name || doctorData.name || "Doctor");
-
-        // Example: fetch appointments & patients count if backend provides
-        setAppointments(doctorData.appointments || []);
-        setPatientsCount(doctorData.patientsCount || doctorData.patients?.length || 0);
+        const patientIds = [...new Set(apptRes.data.map(a => a.user_id))];
+        const patientProfiles = await Promise.all(patientIds.map(id => axios.get(`${API_BASE_URL}/api/profile/${id}`).then(r => r.data)));
+        setPatients(patientProfiles);
       } catch (err) {
-        console.error("Error fetching doctor data:", err);
-        setDoctorName("Error Loading Name");
+        console.error(err);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchDoctorData();
+    fetchData();
   }, [custom_id]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <span className="text-xl font-semibold text-blue-600">Loading Doctor Dashboard...</span>
-      </div>
-    );
-  }
+  if (loading) return <div className="p-4 text-center text-gray-500">Loading dashboard...</div>;
+
+  const summaryData = [
+    { label: "Patients", value: patients.length, icon: UserCircleIcon, colorClass: "text-indigo-600", bgClass: "bg-indigo-50", link: "#patients" },
+    { label: "Appointments", value: appointments.length, icon: CalendarDaysIcon, colorClass: "text-green-600", bgClass: "bg-green-50", link: "#appointments" },
+    { label: "Profile Completion", value: doctor.full_name && doctor.specialization ? "100%" : "50%", icon: ClipboardDocumentCheckIcon, colorClass: "text-yellow-600", bgClass: "bg-yellow-50", link: "#profile" },
+  ];
 
   return (
-    <div className="p-4 sm:p-8 max-w-6xl mx-auto bg-gray-50 min-h-screen">
-      <div className="space-y-6 lg:space-y-8">
+    <div className="p-6 max-w-6xl mx-auto bg-gray-50 min-h-screen space-y-6">
 
-        {/* Welcome / Alerts */}
-        <div className="bg-white p-5 md:p-8 rounded-2xl shadow-xl border-t-4 border-indigo-600">
-          <div className="flex justify-between items-start border-b pb-4 mb-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800">
-                Hello, <span className="font-bold text-indigo-700">{doctorName.split(" ").slice(0, 2).join(" ")}</span>
-              </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Your <strong>Doctor Dashboard</strong>. Manage patients, appointments, and reports.
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Doctor ID: <span className="font-mono font-medium">{custom_id || "N/A"}</span>
-              </p>
-            </div>
-            <Link
-              to="settings"
-              className="flex items-center text-xs sm:text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full hover:bg-gray-200 transition ring-1 ring-gray-300"
-            >
-              <Cog6ToothIcon className="w-4 h-4 mr-1 text-gray-500" /> Settings
-            </Link>
+      {/* Doctor Info */}
+      <div className="bg-white p-6 rounded-2xl shadow-xl flex justify-between items-center border border-gray-200">
+        <div className="flex items-center space-x-5">
+          <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100">
+            {doctor.profile_image ? (
+              <img src={`${API_BASE_URL}/${doctor.profile_image}`} alt="Doctor" className="w-full h-full object-cover" />
+            ) : <UserCircleIcon className="w-20 h-20 text-gray-400" />}
           </div>
-
-          {/* Critical Alerts */}
-          <div className="p-4 bg-red-100 border border-red-400 rounded-xl flex items-start space-x-4 shadow-inner">
-            <BellAlertIcon className="w-6 h-6 text-red-700 flex-shrink-0 mt-0.5" />
-            <div>
-              <h2 className="text-base font-extrabold text-red-800 uppercase tracking-wider">Pending Lab Reviews</h2>
-              <p className="text-sm text-red-700 mt-1">
-                You have {appointments.filter(a => a.status === "pending").length} pending lab results to review.
-              </p>
-              <Link
-                to="appointments"
-                className="mt-2 inline-flex items-center text-sm font-bold text-red-600 hover:text-red-800 transition"
-              >
-                View Pending Appointments <ArrowRightIcon className="ml-1 h-4 w-4" />
-              </Link>
-            </div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">{doctor.full_name}</h2>
+            <p className="text-sm text-gray-500">{doctor.specialization || "Specialization not set"}</p>
+            <p className="text-xs text-gray-400 mt-1">Email: {doctor.email || "N/A"}</p>
+            <p className="text-xs text-gray-400">Phone: {doctor.phone || "N/A"}</p>
           </div>
         </div>
+        <Link to="settings" className="text-xs text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full hover:bg-gray-200 transition flex items-center">
+          <Cog6ToothIcon className="w-4 h-4 mr-1" /> Settings
+        </Link>
+      </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          {/* Patients */}
-          <Link
-            to="patients"
-            className="block bg-indigo-50 p-5 rounded-2xl border border-gray-200 shadow-lg transition hover:shadow-2xl hover:ring-2 hover:ring-offset-2 hover:ring-indigo-500"
-          >
-            <div className="flex justify-between items-center">
-              <UserCircleIcon className="w-7 h-7 text-indigo-600" />
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-widest">Patients</p>
-            </div>
-            <div className="mt-3 border-t pt-3 border-gray-200">
-              <span className="text-3xl font-extrabold text-indigo-600">{patientsCount}</span>
-              <span className="text-sm font-semibold text-gray-500 ml-2">registered</span>
-            </div>
-          </Link>
+      {/* Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {summaryData.map((item, idx) => <SummaryCard key={idx} {...item} />)}
+      </div>
 
-          {/* Upcoming Appointment */}
-          <Link
-            to="appointments"
-            className="block bg-green-50 p-5 rounded-2xl border border-gray-200 shadow-lg transition hover:shadow-2xl hover:ring-2 hover:ring-offset-2 hover:ring-green-500"
-          >
-            <div className="flex justify-between items-center">
-              <CalendarDaysIcon className="w-7 h-7 text-green-600" />
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-widest">Next Appointment</p>
-            </div>
-            <div className="mt-3 border-t pt-3 border-gray-200">
-              <span className="text-3xl font-extrabold text-green-600">
-                {appointments.length > 0 ? new Date(appointments[0].date).toDateString() : "N/A"}
-              </span>
-            </div>
-          </Link>
-
-          {/* Profile Completion */}
-          <Link
-            to="profile"
-            className="block bg-yellow-50 p-5 rounded-2xl border border-gray-200 shadow-lg transition hover:shadow-2xl hover:ring-2 hover:ring-offset-2 hover:ring-yellow-500"
-          >
-            <div className="flex justify-between items-center">
-              <ClipboardDocumentCheckIcon className="w-7 h-7 text-yellow-600" />
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-widest">Profile Completion</p>
-            </div>
-            <div className="mt-3 border-t pt-3 border-gray-200">
-              <span className="text-3xl font-extrabold text-yellow-600">
-                {profile.full_name && profile.specialization ? "100%" : "50%"}
-              </span>
-            </div>
-          </Link>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="bg-white p-5 rounded-2xl shadow-xl border border-gray-200">
-          <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">Quick Stats</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Link to="appointments" className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition group">
-              <div className="flex items-center space-x-3 mb-2">
-                <CalendarDaysIcon className="w-5 h-5 text-green-600" />
-                <p className="text-xs font-medium text-gray-500 uppercase">Upcoming Appts</p>
-              </div>
-              <p className="text-lg font-extrabold text-gray-800">{appointments.length}</p>
-            </Link>
-
-            <Link to="patients" className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition group">
-              <div className="flex items-center space-x-3 mb-2">
-                <UserCircleIcon className="w-5 h-5 text-indigo-600" />
-                <p className="text-xs font-medium text-gray-500 uppercase">Patients</p>
-              </div>
-              <p className="text-lg font-extrabold text-gray-800">{patientsCount}</p>
-            </Link>
-
-            <Link to="messages" className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition group">
-              <div className="flex items-center space-x-3 mb-2">
-                <ChatBubbleLeftRightIcon className="w-5 h-5 text-indigo-700" />
-                <p className="text-xs font-medium text-gray-500 uppercase">Messages</p>
-              </div>
-              <p className="text-lg font-extrabold text-gray-800">5</p>
-            </Link>
-
-            <Link to="billing" className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition group">
-              <div className="flex items-center space-x-3 mb-2">
-                <ReceiptRefundIcon className="w-5 h-5 text-teal-600" />
-                <p className="text-xs font-medium text-gray-500 uppercase">Pending Bills</p>
-              </div>
-              <p className="text-lg font-extrabold text-gray-800">2</p>
-            </Link>
-          </div>
-        </div>
-
-        {/* Core Modules */}
-        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Core Doctor Modules</h2>
+      {/* Appointments */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold text-gray-800">Upcoming Appointments</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Profile, Appointments, Patients, Billing, Messages, Support */}
-          {[
-            { to: "profile", icon: UserCircleIcon, label: "Doctor Profile", desc: "Manage your details, specialization, and contact info." },
-            { to: "appointments", icon: CalendarDaysIcon, label: "Appointments", desc: "View, manage, and update patient appointments." },
-            { to: "patients", icon: UserCircleIcon, label: "Patients", desc: "View patient list, history, and health records." },
-            { to: "billing", icon: ReceiptRefundIcon, label: "Billing & Payments", desc: "View invoices, manage payments and insurance claims." },
-            { to: "messages", icon: ChatBubbleLeftRightIcon, label: "Messages", desc: "Communicate securely with patients and team members." },
-            { to: "support", icon: LifebuoyIcon, label: "Support", desc: "Access FAQs, guides, and technical support." },
-          ].map((mod, i) => (
-            <Link key={i} to={mod.to} className="flex items-center p-4 sm:p-5 bg-white border border-gray-200 rounded-xl hover:bg-indigo-50 shadow-sm">
-              <mod.icon className="w-7 h-7 text-indigo-700 mr-4" />
-              <div>
-                <span className="font-semibold text-gray-800 text-base">{mod.label}</span>
-                <p className="text-xs text-gray-500 mt-1">{mod.desc}</p>
-              </div>
-              <ArrowRightIcon className="w-5 h-5 ml-auto text-gray-400" />
-            </Link>
-          ))}
+          {appointments.length > 0 ? appointments.map(appt => <AppointmentCard key={appt.id} appt={appt} />) : <p className="text-gray-500">No upcoming appointments</p>}
         </div>
+      </div>
 
-        {/* Footer Security */}
-        <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200 text-sm text-gray-700 mt-8 shadow-inner">
-          <div className="flex justify-between items-center flex-wrap">
-            <p className="flex items-center text-xs sm:text-sm font-medium mb-2 sm:mb-0 text-indigo-700">
-              <ShieldCheckIcon className="w-4 h-4 inline mr-2 text-green-600" />
-              <strong>Data Security:</strong> All doctor and patient data is secure and compliant with HIPAA & GDPR.
-            </p>
-            <Link to="settings/security" className="font-bold text-indigo-600 hover:text-indigo-800 transition text-xs sm:text-sm">
-              View Compliance Details →
-            </Link>
-          </div>
+      {/* Patients */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold text-gray-800">Your Patients</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {patients.length > 0 ? patients.map(p => <PatientCard key={p.custom_id} patient={p} />) : <p className="text-gray-500">No patients found</p>}
         </div>
+      </div>
 
+      {/* Footer */}
+      <div className="p-3 bg-gray-100 rounded-xl border border-gray-200 text-xs text-gray-700 shadow-inner mt-6 flex items-center">
+        <ShieldCheckIcon className="w-4 h-4 mr-1 text-green-600" /> Data is HIPAA/GDPR compliant
       </div>
     </div>
   );
