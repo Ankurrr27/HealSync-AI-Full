@@ -58,7 +58,7 @@ const PatientCard = ({ patient }) => (
     </div>
     <h3 className="text-sm font-semibold text-gray-800">{patient.full_name}</h3>
     <p className="text-xs text-gray-500">{patient.age ? `${patient.age} yrs` : ""} {patient.gender ? `| ${patient.gender}` : ""}</p>
-    <Link to={`/patients/${patient.custom_id}`} className="text-indigo-600 text-sm font-semibold flex items-center mt-1">
+    <Link to={`/patient/${patient.custom_id}`} className="text-indigo-600 text-sm font-semibold flex items-center mt-1">
       View Profile <ArrowRightIcon className="w-3 h-3 ml-1" />
     </Link>
   </div>
