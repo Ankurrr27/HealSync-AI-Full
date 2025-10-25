@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getAllDoctors,
   getDoctorAppointments,
   getUserAppointments,
   bookAppointment,
@@ -8,11 +9,14 @@ import {
 
 const router = express.Router();
 
-// User routes
+// ---------- Doctors ----------
+router.get("/doctors", getAllDoctors);
+
+// ---------- Users ----------
 router.get("/user/:userId", getUserAppointments);
 router.post("/book", bookAppointment);
 
-// Doctor routes
+// ---------- Doctor ----------
 router.get("/doctor/:doctorId", getDoctorAppointments);
 router.patch("/:appointmentId", updateAppointment);
 

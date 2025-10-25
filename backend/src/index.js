@@ -6,6 +6,7 @@ import profileRoutes from "./routes/profileRoutes.js";
 import path from "path";
 import userRecordsRoutes from "./routes/userRecordsRoutes.js";
 import doctorProfileRoutes from "./routes/doctorProfileRoutes.js";
+import appointmentsRoutes from "./routes/appointmentsRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -18,6 +19,8 @@ app.use("/api", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/records", userRecordsRoutes);
 app.use("/api/doctor", doctorProfileRoutes);
+app.use("/api/appointments", appointmentsRoutes);
+
 
 
 
