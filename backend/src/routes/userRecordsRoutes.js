@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB max
 
 // Routes
-router.post("/upload", upload.single("file"), uploadRecord);
+router.post("/:custom_id/upload", upload.single("file"), uploadRecord);
 router.get("/:custom_id", getRecords);
 
 export default router;

@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import path from "path";
 import userRecordsRoutes from "./routes/userRecordsRoutes.js";
+import doctorProfileRoutes from "./routes/doctorProfileRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -16,6 +17,7 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/records", userRecordsRoutes);
+app.use("/api/doctor", doctorProfileRoutes);
 
 
 
