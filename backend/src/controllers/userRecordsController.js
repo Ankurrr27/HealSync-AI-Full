@@ -5,8 +5,11 @@ import path from "path";
 // Upload
 export const uploadRecord = async (req, res) => {
   try {
-    const { custom_id } = req.body;
+    // ✅ read from params, fallback to body (covers both cases)
+    const custom_id = req.params.custom_id || req.body.custom_id;
     const file = req.file;
+
+    if (!custom_id) return res.status(400).json({ error: "custom_id is required" });
     if (!file) return res.status(400).json({ error: "No file uploaded" });
 
     const filePath = `uploads/${file.filename}`;
@@ -23,13 +26,13 @@ export const uploadRecord = async (req, res) => {
         record_id: result.insertId,
         custom_id,
         file_name: file.originalname,
-        file_path: filePath,
+        file_path: filePath.replace(/\\/g, "/"),
         file_type: fileType,
         uploaded_at: new Date(),
       },
     });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Upload Error:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -38,6 +41,7 @@ export const uploadRecord = async (req, res) => {
 export const getRecords = async (req, res) => {
   try {
     const { custom_id } = req.params;
+
     const [results] = await db.query(
       `SELECT record_id, custom_id, file_name, file_path, file_type, uploaded_at
        FROM user_records
@@ -46,14 +50,14 @@ export const getRecords = async (req, res) => {
       [custom_id]
     );
 
-    const fixedResults = results.map(r => ({
+    const fixedResults = results.map((r) => ({
       ...r,
       file_path: r.file_path.replace(/\\/g, "/"),
     }));
 
     res.json(fixedResults);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Get Records Error:", err);
     res.status(500).json({ error: err.message });
   }
 };
