@@ -90,6 +90,7 @@ function App() {
             <Route path="ai" element={<AI />} />
             <Route path="appointments" element={<Doctorappointment />} />
             <Route path="posturecorrector" element={<PostureCorrector />} />
+            <Route path="notification" element={<Notifications />} />
           </Route>
         </Route>
       </Routes>
