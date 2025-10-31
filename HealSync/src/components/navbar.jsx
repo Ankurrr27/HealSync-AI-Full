@@ -75,7 +75,7 @@ const Navbar = () => {
         <Link to="/" className="flex items-center flex-shrink-0 cursor-pointer">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             <span className="text-gray-900">Heal</span>
-            <span className="text-indigo-600">Sync</span>
+            <span className="text-blue-400">Sync</span>
           </h1>
         </Link>
 
@@ -110,7 +110,7 @@ const Navbar = () => {
             <div className="hidden sm:flex space-x-3 text-sm">
               <Link
                 to="/login"
-                className="px-4 py-2 font-semibold rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition duration-300 shadow-md"
+                className="px-4 py-2 font-semibold rounded-full bg-blue-400 text-white hover:bg-blue-500 transition duration-300 shadow-md"
               >
                 Login
               </Link>
@@ -126,7 +126,7 @@ const Navbar = () => {
               <div className="hidden lg:flex items-center space-x-3">
                 <Link
                   to={`/${role}/${customId}/notification`}
-                  className="text-gray-600 hover:text-indigo-700 p-2 rounded-full hover:bg-gray-100 relative"
+                  className="text-gray-600 hover:text-blue-500 p-2 rounded-full hover:bg-gray-100 relative"
                   title="Notifications"
                 >
                   <BellIcon className="w-6 h-6" />
@@ -159,16 +159,16 @@ const Navbar = () => {
                   Logout
                 </button>
               </div>
-
-              {/* Mobile Toggle */}
-              <button
-                className="lg:hidden p-2 rounded-md text-gray-600 hover:text-indigo-700 hover:bg-gray-100 transition"
-                onClick={() => setMobileOpen(!mobileOpen)}
-              >
-                {mobileOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
-              </button>
             </>
           )}
+
+          {/* Mobile Toggle (Always Visible) */}
+          <button
+            className="lg:hidden p-2 rounded-md text-gray-600 hover:text-blue-400 hover:bg-gray-100 transition"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
+          </button>
         </div>
       </div>
 
@@ -204,6 +204,26 @@ const Navbar = () => {
           >
             Logout
           </button>
+        </div>
+      )}
+
+      {/* Mobile Auth Buttons for Welcome Page */}
+      {mobileOpen && isAuthPage && (
+        <div className="absolute right-4 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-xl p-3 flex flex-col items-start space-y-2 text-sm">
+          <Link
+            to="/login"
+            className="w-full text-center px-4 py-2 font-semibold rounded-full bg-blue-400 text-white hover:bg-blue-500 transition duration-300 shadow-md"
+            onClick={() => setMobileOpen(false)}
+          >
+            Login
+          </Link>
+          <Link
+            to="/signup"
+            className="w-full text-center px-4 py-2 font-semibold rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition duration-300 ring-1 ring-gray-300"
+            onClick={() => setMobileOpen(false)}
+          >
+            Signup
+          </Link>
         </div>
       )}
     </nav>
