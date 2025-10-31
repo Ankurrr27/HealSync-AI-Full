@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { patientData } from "./patientData"; // ensure this exports correctly
+import { patientData } from "./patientData";
 
 const style = `
   @keyframes fadeIn {
@@ -31,15 +31,14 @@ export default function AI() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // 🧠 Detect available Gemini model
   const findAvailableGeminiModel = async () => {
     if (!apiKey) throw new Error("VITE_GEMINI_API_KEY not set in .env");
     if (modelCacheRef.current) return modelCacheRef.current;
 
-    const listUrl = `https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`;
-    const res = await fetch(listUrl);
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`
+    );
     const data = await res.json();
-
     const models = data?.models || [];
     const preferred = models.find(
       (m) => /gemini/i.test(m.name) && !/vision|image|video/i.test(m.name)
@@ -48,37 +47,25 @@ export default function AI() {
     return modelCacheRef.current;
   };
 
-  // 🧩 Core Gemini API call
   const callGenerateContent = async (modelName, prompt) => {
-    const url = `https://generativelanguage.googleapis.com/v1/${modelName}:generateContent?key=${apiKey}`;
-    const body = {
-      contents: [{ parts: [{ text: prompt }] }],
-    };
-
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) {
-      const txt = await res.text();
-      console.error("generateContent error", res.status, txt);
-      throw new Error(`generateContent failed: ${res.status}`);
-    }
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1/${modelName}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      }
+    );
 
     const json = await res.json();
     let text =
       json?.candidates?.[0]?.content?.parts?.[0]?.text ??
       json?.output?.[0]?.content?.parts?.[0]?.text ??
-      json?.candidates?.[0]?.content?.[0]?.text ??
       "No response from AI";
 
-    text = text.replace(/\\/g, "").replace(/\*/g, "");
-    return text.trim();
+    return text.replace(/\\/g, "").replace(/\*/g, "").trim();
   };
 
-  // ✍️ Build the prompt dynamically
   const buildPromptWithPatient = (userQuery) => `
 You are Heal Singh, a friendly digital health assistant. Use the following patient record to give relevant and concise advice.
 
@@ -94,20 +81,16 @@ User Question:
 ${userQuery}
 `;
 
-  // 🚀 Send query to Gemini
   const sendToGemini = async (userQuery) => {
     try {
-      if (!apiKey) return "Missing API key. Please configure your .env file.";
       const modelName = await findAvailableGeminiModel();
       const prompt = buildPromptWithPatient(userQuery);
       return await callGenerateContent(modelName, prompt);
     } catch (err) {
-      console.error("sendToGemini error:", err);
       return "Sorry, I couldn't reach the AI service. Try again later.";
     }
   };
 
-  // 💬 Handle message send
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -121,7 +104,6 @@ ${userQuery}
     setIsTyping(false);
   };
 
-  // ⚡ Quick prompt buttons
   const handlePromptClick = async (prompt) => {
     setMessages((prev) => [...prev, { text: prompt, sender: "user" }]);
     setIsTyping(true);
@@ -149,52 +131,45 @@ ${userQuery}
       <style>{style}</style>
 
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200 shadow-md sticky top-0 z-10">
-        <div className="flex items-center space-x-2">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            
-          </svg>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-800">
-            Digital Health Companion
-          </h1>
-        </div>
+      <div className="flex items-center justify-between px-4 py-3 sm:p-4 bg-white border-b border-gray-200 shadow-md sticky top-0 z-10">
+        <h1 className="text-lg sm:text-2xl font-bold text-gray-800">
+          Digital Health Companion
+        </h1>
         <button
-  onClick={() => window.history.back()}
-  className="flex items-center justify-center w-10 h-10 rounded-full text-blue-600 hover:text-white hover:bg-blue-600 transition-all duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-300"
-  aria-label="Go back to home"
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-  </svg>
-</button>
-
+          onClick={() => window.history.back()}
+          className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full text-blue-600 hover:text-white hover:bg-blue-600 transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-3 sm:p-4 space-y-4">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center text-center pt-10">
-            <h2 className="text-5xl font-extrabold bg-clip-text text-blue-600">
+          <div className="flex flex-col items-center justify-center text-center pt-8 sm:pt-10">
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-blue-600">
               Heal <span className="text-black">Singh AI</span>
             </h2>
-            <p className="text-gray-900 text-lg font-medium my-6">
-              Hey there  How can I help with your health today?
+            <p className="text-gray-900 text-sm sm:text-lg font-medium my-4 sm:my-6">
+              Hey there 👋 How can I help with your health today?
             </p>
-          
-            <div className="w-full overflow-hidden space-y-6">
+
+            <div className="w-full overflow-hidden space-y-4 sm:space-y-6">
               <div className="flex animate-scroll-left whitespace-nowrap p-2 min-w-[200%]">
                 {scrollingPrompts.map((prompt, i) => (
                   <button
                     key={`r1-${i}`}
                     onClick={() => handlePromptClick(prompt)}
-                    className="flex-shrink-0 mr-3 px-3 py-2 bg-white border border-blue-200 text-blue-600 rounded-lg text-sm shadow-sm hover:bg-blue-50"
+                    className="flex-shrink-0 mr-2 sm:mr-3 px-2 sm:px-3 py-1.5 sm:py-2 bg-white border border-blue-200 text-blue-600 rounded-lg text-xs sm:text-sm shadow-sm hover:bg-blue-50"
                   >
                     {prompt}
                   </button>
@@ -205,7 +180,7 @@ ${userQuery}
                   <button
                     key={`r2-${i}`}
                     onClick={() => handlePromptClick(prompt)}
-                    className="flex-shrink-0 mr-3 px-3 py-2 bg-white border border-blue-200 text-blue-600 rounded-lg text-sm shadow-sm hover:bg-blue-50"
+                    className="flex-shrink-0 mr-2 sm:mr-3 px-2 sm:px-3 py-1.5 sm:py-2 bg-white border border-blue-200 text-blue-600 rounded-lg text-xs sm:text-sm shadow-sm hover:bg-blue-50"
                   >
                     {prompt}
                   </button>
@@ -223,20 +198,20 @@ ${userQuery}
             }`}
           >
             <div
-              className={`p-3 rounded-xl max-w-xs md:max-w-md shadow-md ${
+              className={`p-2 sm:p-3 rounded-xl max-w-[80%] sm:max-w-md shadow-md text-xs sm:text-sm ${
                 msg.sender === "user"
                   ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-none"
                   : "bg-gray-200 text-gray-800 rounded-bl-none"
               }`}
             >
-              <p className="text-sm whitespace-pre-line">{msg.text}</p>
+              {msg.text}
             </div>
           </div>
         ))}
 
         {isTyping && (
           <div className="flex justify-start message-enter">
-            <div className="bg-gray-200 text-gray-600 px-3 py-2 rounded-xl text-sm animate-pulse">
+            <div className="bg-gray-200 text-gray-600 px-3 py-2 rounded-xl text-xs sm:text-sm animate-pulse">
               AI is typing...
             </div>
           </div>
@@ -247,7 +222,7 @@ ${userQuery}
       {/* Input */}
       <form
         onSubmit={handleSendMessage}
-        className="p-4 bg-white border-t border-gray-200 sticky bottom-0"
+        className="p-3 sm:p-4 bg-white border-t border-gray-200 sticky bottom-0"
       >
         <div className="flex items-center space-x-2">
           <input
@@ -255,12 +230,12 @@ ${userQuery}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your health query..."
-            className="flex-1 p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="submit"
             disabled={isTyping}
-            className={`p-3 text-white rounded-full ${
+            className={`p-2 sm:p-3 text-white rounded-full ${
               isTyping
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
@@ -268,7 +243,7 @@ ${userQuery}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 transform -rotate-45"
+              className="h-5 w-5 sm:h-6 sm:w-6 transform -rotate-45"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

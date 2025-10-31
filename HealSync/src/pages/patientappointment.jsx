@@ -159,13 +159,13 @@ const PatientAppointment = () => {
       <h2 className="text-3xl font-bold text-black text-center">🩺 Book an Appointment</h2>
 
       {/* 🔹 Filter Section */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white p-4 rounded-xl shadow">
+      <div className="flex flex-row  sm:flex-row gap-3 items-center justify-between bg-white p-2 md:p-4 rounded-xl shadow">
         <input
           type="text"
           placeholder="Filter by specialization (e.g. Cardiologist)"
           value={filterSpec}
           onChange={(e) => setFilterSpec(e.target.value)}
-          className="border border-gray-300 px-4 py-2 rounded-md flex-1 focus:ring-2 focus:ring-indigo-400"
+          className="border border-gray-300 text-xs md:text-sm px-4 py-2 rounded-md flex-1 focus:ring-2 focus:ring-indigo-400"
         />
         <button
           onClick={() => setFilterSpec("")}
