@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FiBell, FiClock } from "react-icons/fi";
 import axios from "axios";
@@ -13,6 +13,22 @@ const Notifications = () => {
   const [frequency, setFrequency] = useState("");
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
+  const [medicines, setMedicines] = useState([]);
+  const [selectedMedicine, setSelectedMedicine] = useState(null);
+
+
+  // Fetch medicine list
+useEffect(() => {
+  const fetchMedicines = async () => {
+    try {
+      const { data } = await axios.get(`${API_BASE}/medicines`);
+      setMedicines(data);
+    } catch (err) {
+      console.error("Error fetching medicines:", err);
+    }
+  };
+  fetchMedicines();
+}, []);
 
   // ✅ Fetch user once, then reminders after that
   useEffect(() => {
@@ -125,50 +141,82 @@ const Notifications = () => {
         </div>
 
         {/* Add Reminder Form */}
-        <form
-          onSubmit={handleAddReminder}
-          className="mb-8 bg-white/70 backdrop-blur-xl p-4 rounded-2xl border border-gray-100 shadow-sm"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-center">
-            <input
-              type="text"
-              placeholder="Medicine name"
-              value={medicineName}
-              onChange={(e) => setMedicineName(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
-            />
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
-            />
-            <input
-              type="text"
-              placeholder="Phone number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
-            />
-            <select
-              value={frequency}
-              onChange={(e) => setFrequency(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
-            >
-              <option value="">Frequency</option>
-              <option value="Daily">Daily</option>
-              <option value="Weekly">Weekly</option>
-              <option value="Custom">Custom</option>
-            </select>
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
-            >
-              {loading ? "Adding..." : "Add"}
-            </button>
-          </div>
-        </form>
+        {/* Add Reminder Form */}
+<form
+  onSubmit={handleAddReminder}
+  className="mb-8 bg-white/70 backdrop-blur-xl p-4 rounded-2xl border border-gray-100 shadow-sm"
+>
+  <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-center">
+    <select
+      value={medicineName}
+      onChange={(e) => {
+        setMedicineName(e.target.value);
+        const selected = medicines.find((m) => m.name === e.target.value);
+        setSelectedMedicine(selected || null);
+      }}
+      className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
+    >
+      <option value="">Select Medicine</option>
+      {medicines.map((m, i) => (
+        <option key={i} value={m.name}>
+          {m.name}
+        </option>
+      ))}
+    </select>
+
+    <input
+      type="time"
+      value={time}
+      onChange={(e) => setTime(e.target.value)}
+      className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
+    />
+    <input
+      type="text"
+      placeholder="Phone number"
+      value={phone}
+      onChange={(e) => setPhone(e.target.value)}
+      className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
+    />
+    <select
+      value={frequency}
+      onChange={(e) => setFrequency(e.target.value)}
+      className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
+    >
+      <option value="">Frequency</option>
+      <option value="Daily">Daily</option>
+      <option value="Weekly">Weekly</option>
+      <option value="Custom">Custom</option>
+    </select>
+    <button
+      type="submit"
+      disabled={loading}
+      className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
+    >
+      {loading ? "Adding..." : "Add"}
+    </button>
+  </div>
+</form>
+
+{/* Medicine Info */}
+{selectedMedicine && (
+  <motion.div
+    initial={{ opacity: 0, y: -10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+    className="mb-8 bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 shadow-sm"
+  >
+    <h4 className="text-lg font-semibold text-indigo-700 mb-1">
+      {selectedMedicine.name}
+    </h4>
+    <p className="text-sm text-gray-700">
+      <strong>Category:</strong> {selectedMedicine.category} <br />
+      <strong>Type:</strong> {selectedMedicine.type} <br />
+      <strong>Usage:</strong> {selectedMedicine.usage} <br />
+      <strong>Dosage:</strong> {selectedMedicine.dosage}
+    </p>
+  </motion.div>
+)}
+
 
         {/* Reminders List */}
         {reminders.length > 0 ? (
