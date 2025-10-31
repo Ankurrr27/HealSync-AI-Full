@@ -17,22 +17,33 @@ export const getAllDoctors = async (req, res) => {
 // ------------------ Appointments ------------------
 
 // GET all appointments for a doctor
+// GET all appointments for a doctor
 export const getDoctorAppointments = async (req, res) => {
   const { doctorId } = req.params;
   try {
     const [rows] = await db.query(
-      `SELECT a.*, u.full_name AS patient_name
+      `SELECT 
+         a.*, 
+         u.full_name AS patient_name,
+         u.mobile_number AS patient_phone,
+         u.gender AS patient_gender,
+         u.date_of_birth AS patient_dob,
+         u.blood_group AS patient_blood_group,
+         u.current_address AS patient_address,
+         u.profile_image AS patient_photo
        FROM appointments a
        JOIN user_profiles u ON a.user_id = u.custom_id
-       WHERE a.doctor_id = ? ORDER BY appointment_date DESC`,
+       WHERE a.doctor_id = ?
+       ORDER BY a.appointment_date DESC`,
       [doctorId]
     );
     res.json(rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error fetching doctor appointments:", err);
+    res.status(500).json({ message: "Server error fetching appointments" });
   }
 };
+
 
 // GET all appointments for a user
 export const getUserAppointments = async (req, res) => {
