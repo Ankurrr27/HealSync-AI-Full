@@ -679,105 +679,104 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-blue-50 text-gray-900 p-4 sm:p-8 flex items-center justify-center font-sans">
-      <div className="w-full max-w-6xl space-y-8">
-        {/* --- CHANGE: Renamed App Title --- */}
-        <h1 className="text-5xl font-extrabold text-center text-blue-800 tracking-tight">
-            Posturise
-        </h1>
+      <div className="w-full max-w-6xl space-y-10 mx-auto">
+  {/* --- Header Section --- */}
+  <div className="flex items-center justify-between">
+    <h1 className="text-5xl font-extrabold text-blue-800 tracking-tight">Posturise</h1>
+    <button
+  onClick={() => window.history.back()}
+  className="flex items-center justify-center w-10 h-10 rounded-full text-blue-600 hover:text-white hover:bg-blue-600 transition-all duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-300"
+  aria-label="Go back to home"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+  </svg>
+</button>
+
+  </div>
+
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    {/* --- Controls Panel --- */}
+    <Card className="lg:col-span-1 h-full space-y-8">
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold border-b border-blue-200 pb-3 text-blue-700">Session Control</h2>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Controls Panel (Left Column - lg:col-span-1) */}
-          <Card className="lg:col-span-1 h-full space-y-8">
-            <div className="space-y-6">
-                <h2 className="text-2xl font-bold border-b border-blue-200 pb-3 text-blue-700">Session Control</h2>
-                
-                <div className="space-y-3">
-                  <label htmlFor="exercise-select" className="block text-lg font-semibold text-gray-700">
-                    Choose Your Challenge
-                  </label>
-                  <select
-                    id="exercise-select"
-                    value={exercise}
-                    onChange={(e) => { setExercise(e.target.value); resetCounts(); }}
-                    disabled={isRunning || !isMediaPipeLoaded}
-                    className="w-full p-3 rounded-lg bg-blue-50 border border-blue-300 text-gray-900 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-70 transition duration-150"
-                  >
-                    {Object.values(EXERCISES).map((ex) => (
-                      <option key={ex} value={ex}>{ex}</option>
-                    ))}
-                  </select>
-                </div>
+        <div className="space-y-3">
+          <label htmlFor="exercise-select" className="block text-lg font-semibold text-gray-700">
+            Choose Your Challenge
+          </label>
+          <select
+            id="exercise-select"
+            value={exercise}
+            onChange={(e) => { setExercise(e.target.value); resetCounts(); }}
+            disabled={isRunning || !isMediaPipeLoaded}
+            className="w-full p-3 rounded-lg bg-blue-50 border border-blue-300 text-gray-900 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-70 transition duration-150"
+          >
+            {Object.values(EXERCISES).map((ex) => (
+              <option key={ex} value={ex}>{ex}</option>
+            ))}
+          </select>
+        </div>
 
-                {/* Tracking Buttons */}
-                <div className="flex space-x-4">
-                  <Button onClick={handleStart} disabled={isRunning || !isMediaPipeLoaded} color="blue" className="flex-1">
-                    {isRunning ? 'Tracking...' : 'Start Tracking'}
-                  </Button>
-                  <Button onClick={handleStop} disabled={!isRunning} color="red" className="flex-1">
-                    Stop Tracking
-                  </Button>
-                </div>
-                
-                {/* Reset Button */}
-                <Button onClick={resetCounts} disabled={isRunning} color="green" className="w-full">
-                    Reset Session
-                </Button>
-            </div>
-            
-            {/* Live Counter Display: Real-time Metrics (Header is conditional) */}
-            <div className="border-t border-blue-100 pt-6">
-                {/* --- CHANGE: Conditionally change header for Yoga poses --- */}
-                <h3 className="text-xl font-bold mb-4 text-center text-blue-700">
-                    {isStaticPose ? "Pose Status" : "Real-time Metrics"}
-                </h3>
-                <div className="flex justify-center">
-                    {renderCounterDisplay()}
-                </div>
-            </div>
-          </Card>
-          
-          {/* Camera/Canvas Panel (Right Column - lg:col-span-2) */}
-          <Card className="lg:col-span-2 flex flex-col items-center p-4">
-            <h2 className="text-2xl font-bold mb-4 text-blue-700">Visual Tracker</h2>
-            
-            <div className="relative w-full max-w-[640px] aspect-[640/480] bg-gray-900 rounded-xl overflow-hidden shadow-inner shadow-gray-400">
-              {/* Hidden video element - used as input source for canvas */}
-              <video ref={videoRef} className="hidden" playsInline />
-              
-              {/* Visible canvas - draws video frame and pose landmarks */}
-              <canvas
-                ref={canvasRef}
-                width={CAMERA_WIDTH}
-                height={CAMERA_HEIGHT}
-                className="w-full h-full object-cover"
-              />
-              
-              {/* Overlay for loading/idle status */}
-              {(!isRunning || !isMediaPipeLoaded) && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/80 text-gray-300 backdrop-blur-sm">
-                    {!isMediaPipeLoaded ? (
-                        <p className="text-xl font-bold text-blue-400 p-4 rounded-lg bg-gray-900/50">Loading AI Model...</p>
-                    ) : (
-                        <p className="text-xl p-4 rounded-lg bg-gray-900/50">Select exercise and press 'Start Tracking'</p>
-                    )}
-                </div>
-              )}
-            </div>
-          </Card>
-
-            {/* Posture Guidance Card (Spanning 3 Columns) */}
-            <Card className="lg:col-span-3">
-                <GuidanceCard 
-                    exercise={exercise} 
-                    isRunning={isRunning} 
-                    isCorrectPose={isCorrectPose}
-                />
-            </Card>
-
+        <div className="flex space-x-4">
+          <Button onClick={handleStart} disabled={isRunning || !isMediaPipeLoaded} color="blue" className="flex-1">
+            {isRunning ? 'Tracking...' : 'Start Tracking'}
+          </Button>
+          <Button onClick={handleStop} disabled={!isRunning} color="red" className="flex-1">
+            Stop
+          </Button>
         </div>
         
+        <Button onClick={resetCounts} disabled={isRunning} color="green" className="w-full">
+          Reset Session
+        </Button>
       </div>
+
+      <div className="border-t border-blue-100 pt-6">
+        <h3 className="text-xl font-bold mb-4 text-center text-blue-700">
+          {isStaticPose ? "Pose Status" : "Real-time Metrics"}
+        </h3>
+        <div className="flex justify-center">{renderCounterDisplay()}</div>
+      </div>
+    </Card>
+
+    {/* --- Camera Panel --- */}
+    <Card className="lg:col-span-2 flex flex-col items-center p-4">
+      <h2 className="text-2xl font-bold mb-4 text-blue-700">Visual Tracker</h2>
+      <div className="relative w-full max-w-[640px] aspect-[640/480] bg-gray-900 rounded-xl overflow-hidden shadow-inner shadow-gray-400">
+        <video ref={videoRef} className="hidden" playsInline />
+        <canvas ref={canvasRef} width={CAMERA_WIDTH} height={CAMERA_HEIGHT} className="w-full h-full object-cover" />
+        {(!isRunning || !isMediaPipeLoaded) && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80 text-gray-300 backdrop-blur-sm">
+            {!isMediaPipeLoaded ? (
+              <p className="text-xl font-bold text-blue-400 p-4 rounded-lg bg-gray-900/50">
+                Loading AI Model...
+              </p>
+            ) : (
+              <p className="text-xl p-4 rounded-lg bg-gray-900/50">
+                Select exercise and press 'Start Tracking'
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    </Card>
+
+    {/* --- Posture Guidance --- */}
+    <Card className="lg:col-span-3">
+      <GuidanceCard exercise={exercise} isRunning={isRunning} isCorrectPose={isCorrectPose} />
+    </Card>
+  </div>
+</div>
+
     </div>
   );
 }

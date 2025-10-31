@@ -32,6 +32,8 @@ const fetchDoctors = async () => {
       axios.get(`${API_BASE_URL}/appointments/doctors`), // from your DB
       axios.get("https://690485ce6b8dabde496414b4.mockapi.io/doctors/Jaipur"),
       axios.get("https://690485ce6b8dabde496414b4.mockapi.io/doctors/Chandigarh"),
+      axios.get("https://6904a4086b8dabde4964842b.mockapi.io/doctors/Mumbai"),
+      axios.get("https://6904a4086b8dabde4964842b.mockapi.io/doctors/agra"),
     ]);
 
     // 🩺 Merge backend + mock data (with consistent avatar handling)
