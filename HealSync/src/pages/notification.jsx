@@ -10,31 +10,25 @@ const Notifications = () => {
   const [medicineName, setMedicineName] = useState("");
   const [time, setTime] = useState("");
   const [phone, setPhone] = useState("");
+  const [frequency, setFrequency] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const [expandedMedicine, setExpandedMedicine] = useState(null);
-  const [medicineDetails, setMedicineDetails] = useState([]);
-  const [loadingMedicine, setLoadingMedicine] = useState(false);
-
   const custom_id = "user123";
 
-  // fetch all reminders
   useEffect(() => {
     const fetchReminders = async () => {
       try {
         const { data } = await axios.get(`${API_BASE}/reminders/${custom_id}`);
         setReminders(data);
       } catch (err) {
-        console.error("Error fetching reminders", err);
+        console.error("Error fetching reminders:", err);
       }
     };
     fetchReminders();
   }, []);
 
-  // add reminder
   const handleAddReminder = async (e) => {
     e.preventDefault();
-    if (!medicineName || !time || !phone)
+    if (!medicineName || !time || !phone || !frequency)
       return alert("Please fill all fields!");
 
     setLoading(true);
@@ -44,13 +38,16 @@ const Notifications = () => {
         medicine_name: medicineName,
         reminder_time: time,
         phone_number: phone,
+        reminder_frequency: frequency,
       });
 
       const { data } = await axios.get(`${API_BASE}/reminders/${custom_id}`);
       setReminders(data);
+
       setMedicineName("");
       setTime("");
       setPhone("");
+      setFrequency("");
     } catch (err) {
       console.error("Error adding reminder", err);
     } finally {
@@ -58,37 +55,35 @@ const Notifications = () => {
     }
   };
 
-  // fetch + open roll-down immediately
-  const handleMedicineClick = async (name) => {
-    if (expandedMedicine === name) return setExpandedMedicine(null);
-
-    setExpandedMedicine(name);
-    setMedicineDetails([]);
-    setLoadingMedicine(true);
-
-    try {
-      const [res1, res2] = await Promise.all([
-        axios.get("https://6904bb336b8dabde4964e4ab.mockapi.io/medicine1"),
-        axios.get("https://6904bb336b8dabde4964e4ab.mockapi.io/medicine2"),
-      ]);
-
-      const combined = [...res1.data, ...res2.data];
-      const filtered = combined.filter(
-        (m) =>
-          m.name?.toLowerCase().includes(name.toLowerCase()) ||
-          m.medicine?.toLowerCase().includes(name.toLowerCase())
-      );
-
-      setMedicineDetails(filtered);
-    } catch (err) {
-      console.error("Error fetching medicine details:", err);
-    } finally {
-      setLoadingMedicine(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-green-50 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-10">
+      
+      {/* WhatsApp Activation Notice */}
+      <div className="flex items-center justify-between bg-green-50 border border-green-200 text-gray-700 text-sm px-4 py-2 rounded-lg mb-4 w-full max-w-3xl">
+        <span>
+          ⏰ If your number isn’t registered,{" "}
+          <a
+            href="https://api.whatsapp.com/send/?phone=%2B14155238886&text=join+pitch-after&type=phone_number&app_absent=0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-700 font-semibold hover:underline"
+          >
+            click here
+          </a>{" "}
+          and send{" "}
+          <code className="bg-green-100 px-1 rounded">join pitch-after</code>{" "}
+          on WhatsApp.
+        </span>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText("join pitch-after");
+          }}
+          className="ml-2 bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 rounded-md"
+        >
+          Copy
+        </button>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -101,47 +96,54 @@ const Notifications = () => {
             <FiBell className="text-2xl text-indigo-600" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 tracking-tight">
-            Medicine Reminders 💊
+            Medicine Reminders 
           </h2>
         </div>
 
         {/* add reminder */}
         <form
           onSubmit={handleAddReminder}
-          className="mb-10 bg-white/70 backdrop-blur-xl p-5 rounded-2xl border border-gray-100 shadow-sm"
+          className="mb-8 bg-white/70 backdrop-blur-xl p-4 rounded-2xl border border-gray-100 shadow-sm"
         >
-          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <FiPlus className="text-indigo-500" /> Add Reminder
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-center">
             <input
               type="text"
               placeholder="Medicine name"
               value={medicineName}
               onChange={(e) => setMedicineName(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
             />
             <input
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
             />
             <input
               type="text"
               placeholder="Phone number"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
             />
+            <select
+              value={frequency}
+              onChange={(e) => setFrequency(e.target.value)}
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white/60"
+            >
+              <option value="">Frequency</option>
+              <option value="Daily">Daily</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Custom">Custom</option>
+            </select>
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
+            >
+              {loading ? "Adding..." : "Add"}
+            </button>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
-          >
-            {loading ? "Adding..." : "Add Reminder"}
-          </button>
         </form>
 
         {/* reminders */}
@@ -158,56 +160,15 @@ const Notifications = () => {
                   <div className="p-3 rounded-full bg-indigo-100 text-indigo-600">
                     <FiClock className="text-lg" />
                   </div>
-
                   <div className="flex-1">
-                    <button
-                      onClick={() => handleMedicineClick(rem.medicine_name)}
-                      className="text-sm sm:text-base font-semibold text-gray-800 hover:text-indigo-600 transition"
-                    >
+                    <p className="text-sm sm:text-base font-semibold text-gray-800">
                       {rem.medicine_name}
-                    </button>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-                      Time: {rem.reminder_time}
                     </p>
-                    <p className="text-[11px] sm:text-xs text-gray-400 mt-2 italic">
-                      Status: {rem.status}
+                    <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                      Time: {rem.reminder_time} • {rem.reminder_frequency}
                     </p>
                   </div>
                 </div>
-
-                {/* dropdown roll-down */}
-                <AnimatePresence>
-                  {expandedMedicine === rem.medicine_name && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="mt-4 pl-12 overflow-hidden"
-                    >
-                      {loadingMedicine ? (
-                        <p className="text-sm text-gray-400 italic">
-                          Loading details...
-                        </p>
-                      ) : medicineDetails.length > 0 ? (
-                        <ul className="space-y-1">
-                          {medicineDetails.map((m, idx) => (
-                            <li
-                              key={idx}
-                              className="text-sm bg-indigo-50 px-3 py-1 rounded-lg text-gray-700"
-                            >
-                              💊 {m.name || m.medicine}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-gray-400 italic">
-                          No extra details found for this medicine.
-                        </p>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </motion.div>
             ))}
           </div>
