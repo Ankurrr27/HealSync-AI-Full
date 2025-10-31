@@ -146,12 +146,12 @@ const PatientRecords = () => {
                     >
                       Open
                     </a>
-                    <button
+                    {/* <button
                       onClick={() => handleDelete(r.record_id)}
                       className="p-2 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 text-red-600"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               ))}

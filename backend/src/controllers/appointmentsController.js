@@ -75,21 +75,27 @@ export const bookAppointment = async (req, res) => {
 
 // PATCH: doctor updates appointment status & date
 export const updateAppointment = async (req, res) => {
-  const { appointmentId } = req.params;
-  const { status, appointment_date } = req.body;
-
-  const validStatuses = ["pending", "confirmed", "completed", "cancelled"];
-  if (!validStatuses.includes(status))
-    return res.status(400).json({ message: "Invalid status value" });
-
   try {
-    await db.query(
-      "UPDATE appointments SET status = ?, appointment_date = ? WHERE id = ?",
-      [status, appointment_date || null, appointmentId]
+    const { appointmentId } = req.params; // this is your ":appointmentId" from route
+    const { status, appointment_date } = req.body;
+
+    const [result] = await db.query(
+      `UPDATE appointments
+       SET 
+         status = COALESCE(?, status),
+         appointment_date = COALESCE(?, appointment_date)
+       WHERE id = ?`,
+      [status, appointment_date, appointmentId]
     );
-    res.json({ message: "Appointment updated successfully" });
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "No appointment found with that ID." });
+    }
+
+    res.json({ message: "✅ Appointment updated successfully!" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Update Error:", err);
+    res.status(500).json({ error: err.message });
   }
 };
+
