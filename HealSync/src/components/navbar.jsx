@@ -100,13 +100,14 @@ const Navbar = () => {
           ) : (
             <>
               <div className="hidden lg:flex items-center space-x-3">
-                <button
+                <Link
+                  to={`/${role}/${customId}/notification`}
                   className="text-gray-600 hover:text-indigo-700 p-2 rounded-full hover:bg-gray-100 relative"
                   title="Notifications"
                 >
                   <BellIcon className="w-6 h-6" />
                   <span className="absolute top-0.5 right-0.5 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>
-                </button>
+                </Link>
                 <Link
                   to={`/${role}/${customId}/profile`}
                   className="text-gray-600 hover:text-indigo-700 p-2 rounded-full transition flex items-center"

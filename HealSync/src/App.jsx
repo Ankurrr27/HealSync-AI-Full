@@ -24,6 +24,7 @@ import Doctorappointment from "./pages/doctorappointment.jsx";
 
 import AI from "./pages/ai.jsx";
 import PostureCorrector from "./pages/postureCorrector.jsx";
+import Notifications from "./pages/notification.jsx";
 
 // Layout handles Navbar/Footer visibility
 function Layout() {
@@ -78,6 +79,8 @@ function App() {
             <Route path="appointments" element={<Patientappointment />} />
             <Route path="ai" element={<AI />} />
             <Route path="posturecorrector" element={<PostureCorrector />} />
+            <Route path="notification" element={<Notifications />} />
+
           </Route>
 
           {/* Doctor-specific routes */}

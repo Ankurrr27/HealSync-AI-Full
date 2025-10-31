@@ -10,6 +10,8 @@ import userRecordsRoutes from "./routes/userRecordsRoutes.js";
 import doctorProfileRoutes from "./routes/doctorProfileRoutes.js";
 import appointmentsRoutes from "./routes/appointmentsRoutes.js";
 import userJSONRoutes from "./routes/userJSONRoutes.js"; // 👈 NEW IMPORT
+import reminderRoutes from "./routes/reminderRoutes.js";
+
 
 dotenv.config();
 const app = express();
@@ -26,6 +28,8 @@ app.use("/api/records", userRecordsRoutes);
 app.use("/api/doctor", doctorProfileRoutes);
 app.use("/api/appointments", appointmentsRoutes);
 app.use("/api/json", userJSONRoutes); // 👈 NEW ROUTE
+app.use("/api/reminders", reminderRoutes);
+
 
 // 🌍 Start server
 app.listen(5000, () => console.log("🚀 Server running on http://localhost:5000"));
