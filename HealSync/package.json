@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@mediapipe/camera_utils": "^0.3.1675466862",
+    "@mediapipe/pose": "^0.5.1675469404",
     "@tailwindcss/vite": "^4.1.14",
     "axios": "^1.12.2",
     "framer-motion": "^12.23.24",

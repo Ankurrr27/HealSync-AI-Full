@@ -11,38 +11,46 @@ import Signup from "./pages/signup";
 import Login from "./pages/login";
 import Navbar from "./components/navbar.jsx";
 import Footer from "./components/footer.jsx";
-import Homepage from "./pages/patienthomepage.jsx";
-import Profile from "./pages/patientprofile.jsx";
-import Records from "./pages/patientrecords.jsx";
-import Appointment from "./pages/patientappointment.jsx";
 import WelcomePage from "./pages/welcome.jsx";
+
+import PatientHomepage from "./pages/patienthomepage.jsx";
 import PatientProfile from "./pages/patientprofile.jsx";
 import PatientRecords from "./pages/patientrecords.jsx";
 import Patientappointment from "./pages/patientappointment.jsx";
-import PatientHomepage from "./pages/patienthomepage.jsx";
+
+import Doctorhomepage from "./pages/doctorhomepage.jsx";
 import Doctorprofile from "./pages/doctorprofile.jsx";
 import Doctorappointment from "./pages/doctorappointment.jsx";
-import Doctorhomepage from "./pages/doctorhomepage.jsx";
+
+import AI from "./pages/ai.jsx";
+import PostureCorrector from "./pages/postureCorrector.jsx";
 
 // Layout handles Navbar/Footer visibility
 function Layout() {
   const location = useLocation();
   const authRoutes = ["/login", "/signup"];
 
-  // Footer hidden on login, signup, and all profile pages
+  // Hide Navbar on login, signup, AI, and PostureCorrector pages
+  const hideNavbar =
+    authRoutes.includes(location.pathname) ||
+    location.pathname.includes("/ai") ||
+    location.pathname.includes("/posturecorrector");
+
+  // Hide Footer on login, signup, profile, AI, and PostureCorrector pages
   const hideFooter =
     authRoutes.includes(location.pathname) ||
-    location.pathname.includes("profile");
+    location.pathname.includes("profile") ||
+    location.pathname.includes("/ai") ||
+    location.pathname.includes("/posturecorrector");
 
   return (
     <>
-      {!authRoutes.includes(location.pathname) && <Navbar />}
+      {!hideNavbar && <Navbar />}
       <Outlet />
       {!hideFooter && <Footer />}
     </>
   );
 }
-
 
 // UserLayout for dynamic user routes using custom_id
 function UserLayout() {
@@ -54,8 +62,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Layout */}
         <Route element={<Layout />}>
+          {/* Public Routes */}
           <Route path="/" element={<WelcomePage />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
@@ -66,18 +74,17 @@ function App() {
             <Route path="profile" element={<PatientProfile />} />
             <Route path="records" element={<PatientRecords />} />
             <Route path="appointments" element={<Patientappointment />} />
-
-            
+            <Route path="ai" element={<AI />} />
+            <Route path="posturecorrector" element={<PostureCorrector />} />
           </Route>
 
           {/* Doctor-specific routes */}
           <Route path="/doctor/:custom_id" element={<UserLayout />}>
             <Route index element={<Doctorhomepage />} />
             <Route path="profile" element={<Doctorprofile />} />
-            
+            <Route path="ai" element={<AI />} />
             <Route path="appointments" element={<Doctorappointment />} />
-
-            
+            <Route path="posturecorrector" element={<PostureCorrector />} />
           </Route>
         </Route>
       </Routes>

@@ -49,14 +49,34 @@ const Navbar = () => {
         {/* Desktop Links */}
         {!isAuthPage && customId && role && (
           <div className="hidden lg:flex flex-grow justify-center space-x-1 lg:space-x-3 max-w-3xl text-sm">
-            <Link to={`/${role}/${customId}/`} className={navLinkClass}>Dashboard</Link>
+            <Link to={`/${role}/${customId}/`} className={navLinkClass}>
+              Dashboard
+            </Link>
             {role === "patient" && (
-              <Link to={`/${role}/${customId}/records`} className={navLinkClass}>
+              <Link
+                to={`/${role}/${customId}/records`}
+                className={navLinkClass}
+              >
                 Records
               </Link>
             )}
-            <Link to={`/${role}/${customId}/appointments`} className={navLinkClass}>Appointments</Link>
-            <Link className={navLinkClass}>AI</Link>
+            <Link
+              to={`/${role}/${customId}/appointments`}
+              className={navLinkClass}
+            >
+              Appointments
+            </Link>
+            <Link to={`/${role}/${customId}/ai`} className={navLinkClass}>
+              AI
+            </Link>
+            {role === "patient" && (
+              <Link
+                to={`/${role}/${customId}/posturecorrector`}
+                className={navLinkClass}
+              >
+                Posture Corrector
+              </Link>
+            )}
           </div>
         )}
 
@@ -108,7 +128,11 @@ const Navbar = () => {
                 className="lg:hidden p-1 sm:p-2 rounded-md text-gray-600 hover:text-indigo-700 hover:bg-gray-100 transition"
                 onClick={() => setMobileOpen(!mobileOpen)}
               >
-                {mobileOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
+                {mobileOpen ? (
+                  <XMarkIcon className="w-6 h-6" />
+                ) : (
+                  <Bars3Icon className="w-6 h-6" />
+                )}
               </button>
             </>
           )}
@@ -118,15 +142,26 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {mobileOpen && !isAuthPage && customId && role && (
         <div className="lg:hidden mt-2 space-y-1 px-2 pb-3 text-sm">
-          <Link to={`/${role}/${customId}/`} className={navLinkClass}>Dashboard</Link>
+          <Link to={`/${role}/${customId}/`} className={navLinkClass}>
+            Dashboard
+          </Link>
           {role === "patient" && (
-            <Link to={`/${role}/${customId}/records`} className={navLinkClass}>Records</Link>
+            <Link to={`/${role}/${customId}/records`} className={navLinkClass}>
+              Records
+            </Link>
           )}
-          <Link to={`/${role}/${customId}/appointments`} className={navLinkClass}>Appointments</Link>
+          <Link
+            to={`/${role}/${customId}/appointments`}
+            className={navLinkClass}
+          >
+            Appointments
+          </Link>
           <Link className={navLinkClass}>AI</Link>
 
           <div className="flex flex-col space-y-1 mt-2">
-            <Link to={`/${role}/${customId}/profile`} className={navLinkClass}>Profile</Link>
+            <Link to={`/${role}/${customId}/profile`} className={navLinkClass}>
+              Profile
+            </Link>
             <button
               onClick={handleLogout}
               className="text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded-full transition"

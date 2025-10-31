@@ -226,10 +226,15 @@ const PatientHomepage = () => {
       <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-200 flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6 animate-fadeIn">
         <div className="flex-shrink-0">
           <img
-            src={userProfile?.profile_image ? `${STATIC_BASE_URL}/${userProfile.profile_image}` : "https://via.placeholder.com/120"}
-            alt="Profile"
-            className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-indigo-100 shadow-sm object-cover"
-          />
+  src={
+    userProfile?.profile_image
+      ? `${STATIC_BASE_URL}/${userProfile.profile_image.startsWith("uploads/") ? userProfile.profile_image : `uploads/${userProfile.profile_image}`}`
+      : "https://via.placeholder.com/120"
+  }
+  alt="Profile"
+  className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-indigo-100 shadow-sm object-cover"
+/>
+
         </div>
         <div className="flex-1 space-y-1">
           <h2 className="text-2xl font-bold text-gray-800">{name}</h2>
