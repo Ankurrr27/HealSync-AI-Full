@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { FiBell, FiClock, FiPlus } from "react-icons/fi";
+import { motion } from "framer-motion";
+import { FiBell, FiClock } from "react-icons/fi";
 import axios from "axios";
 
 const API_BASE = "http://localhost:5000/api";
@@ -12,44 +12,71 @@ const Notifications = () => {
   const [phone, setPhone] = useState("");
   const [frequency, setFrequency] = useState("");
   const [loading, setLoading] = useState(false);
-  const custom_id = "user123";
+  const [user, setUser] = useState(null);
 
+  // ✅ Fetch user once, then reminders after that
   useEffect(() => {
-    const fetchReminders = async () => {
+    const fetchUser = async () => {
       try {
-        const { data } = await axios.get(`${API_BASE}/reminders/${custom_id}`);
-        setReminders(data);
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        if (!storedUser?.custom_id) {
+          console.warn("No user found in localStorage");
+          return;
+        }
+
+        setUser(storedUser);
+
+        // Get user profile (for phone)
+        const res = await axios.get(`${API_BASE}/profile/${storedUser.custom_id}`);
+        if (res.data) {
+          setPhone(res.data.phone_number || "");
+        }
+
+        // Fetch reminders *after* setting user
+        fetchReminders(storedUser.custom_id);
       } catch (err) {
-        console.error("Error fetching reminders:", err);
+        console.error("Error fetching user or reminders:", err);
       }
     };
-    fetchReminders();
+    fetchUser();
   }, []);
 
+  // ✅ Fetch reminders function
+  const fetchReminders = async (custom_id) => {
+    try {
+      const { data } = await axios.get(`${API_BASE}/reminders/${custom_id}`);
+      setReminders(data || []);
+    } catch (err) {
+      console.error("Error fetching reminders:", err);
+    }
+  };
+
+  // ✅ Add new reminder
   const handleAddReminder = async (e) => {
     e.preventDefault();
     if (!medicineName || !time || !phone || !frequency)
       return alert("Please fill all fields!");
 
+    if (!user?.custom_id)
+      return alert("User not found. Please log in again.");
+
     setLoading(true);
     try {
       await axios.post(`${API_BASE}/reminders`, {
-        custom_id,
+        custom_id: user.custom_id,
         medicine_name: medicineName,
         reminder_time: time,
         phone_number: phone,
         reminder_frequency: frequency,
       });
 
-      const { data } = await axios.get(`${API_BASE}/reminders/${custom_id}`);
-      setReminders(data);
+      fetchReminders(user.custom_id);
 
       setMedicineName("");
       setTime("");
-      setPhone("");
       setFrequency("");
     } catch (err) {
-      console.error("Error adding reminder", err);
+      console.error("Error adding reminder:", err);
     } finally {
       setLoading(false);
     }
@@ -57,7 +84,6 @@ const Notifications = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-green-50 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-10">
-      
       {/* WhatsApp Activation Notice */}
       <div className="flex items-center justify-between bg-green-50 border border-green-200 text-gray-700 text-sm px-4 py-2 rounded-lg mb-4 w-full max-w-3xl">
         <span>
@@ -75,9 +101,7 @@ const Notifications = () => {
           on WhatsApp.
         </span>
         <button
-          onClick={() => {
-            navigator.clipboard.writeText("join pitch-after");
-          }}
+          onClick={() => navigator.clipboard.writeText("join pitch-after")}
           className="ml-2 bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 rounded-md"
         >
           Copy
@@ -90,17 +114,17 @@ const Notifications = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-3xl bg-white/80 backdrop-blur-2xl border border-gray-100 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] p-6 sm:p-8"
       >
-        {/* header */}
+        {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 bg-indigo-100 rounded-2xl">
             <FiBell className="text-2xl text-indigo-600" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 tracking-tight">
-            Medicine Reminders 
+            Medicine Reminders
           </h2>
         </div>
 
-        {/* add reminder */}
+        {/* Add Reminder Form */}
         <form
           onSubmit={handleAddReminder}
           className="mb-8 bg-white/70 backdrop-blur-xl p-4 rounded-2xl border border-gray-100 shadow-sm"
@@ -146,7 +170,7 @@ const Notifications = () => {
           </div>
         </form>
 
-        {/* reminders */}
+        {/* Reminders List */}
         {reminders.length > 0 ? (
           <div className="space-y-4">
             {reminders.map((rem, i) => (
