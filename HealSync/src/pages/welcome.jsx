@@ -156,7 +156,7 @@ const WelcomePage = () => {
 
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mt-2">
-                <Link to="/consultai" className="focus:outline-none">
+                <Link to="/ai" className="focus:outline-none">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.98 }}
@@ -311,7 +311,7 @@ const WelcomePage = () => {
           <p className="text-xs sm:text-base text-gray-500">
             Need an account or support?
             <a
-              href="/contact"
+              href="/"
               className="text-indigo-600 font-bold hover:text-indigo-800 transition ml-1 sm:ml-2 inline-flex items-center"
             >
               Contact Support

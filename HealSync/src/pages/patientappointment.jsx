@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useOutletContext } from "react-router-dom";
 
-
-const API_BASE_URL = "http://localhost:5000/api"; // For API calls
-const STATIC_BASE_URL = "http://localhost:5000"; // For images
+const API_BASE_URL = "http://localhost:5000/api"; // for appointments etc.
+const STATIC_BASE_URL = "http://localhost:5000"; // for images
 
 const PatientAppointment = () => {
   const { custom_id } = useOutletContext();
@@ -16,35 +15,34 @@ const PatientAppointment = () => {
   const [appointmentDate, setAppointmentDate] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // fetch appointments from backend
   const fetchAppointments = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/appointments/user/${custom_id}`);
       setAppointments(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching appointments:", err);
     }
   };
 
+  // fetch doctors from mock APIs
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/appointments/doctors`);
-      setDoctors(res.data);
+      const [chd, jpr] = await Promise.all([
+        axios.get("https://690485ce6b8dabde496414b4.mockapi.io/doctors/Chandigarh"),
+        axios.get("https://690485ce6b8dabde496414b4.mockapi.io/doctors/Jaipur"),
+      ]);
+      const merged = [...chd.data, ...jpr.data];
+      setDoctors(merged);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching doctors:", err);
     }
   };
 
-  const fetchDoctorProfile = async (doctorId) => {
-    if (!doctorId) {
-      setDoctorProfile(null);
-      return;
-    }
-    try {
-      const res = await axios.get(`${API_BASE_URL}/doctor/${doctorId}`);
-      setDoctorProfile(res.data);
-    } catch (err) {
-      console.error(err);
-    }
+  // preview selected doctor from loaded list
+  const fetchDoctorProfile = (doctorId) => {
+    const doc = doctors.find((d) => d.id === doctorId);
+    setDoctorProfile(doc || null);
   };
 
   useEffect(() => {
@@ -94,18 +92,18 @@ const PatientAppointment = () => {
       {/* Doctor Profile Preview */}
       {doctorProfile && (
         <div className="flex gap-4 items-center p-4 bg-white rounded-xl shadow hover:shadow-lg transition animate-fadeIn">
-          {doctorProfile.profile_image && (
+          {doctorProfile.avatar && (
             <img
-              src={`${STATIC_BASE_URL}/${doctorProfile.profile_image}`}
-              alt={doctorProfile.full_name}
+              src={doctorProfile.avatar}
+              alt={doctorProfile.name}
               className="w-20 h-20 rounded-full object-cover border-2 border-indigo-100"
             />
           )}
           <div>
-            <h3 className="text-lg font-bold text-gray-800">{doctorProfile.full_name}</h3>
+            <h3 className="text-lg font-bold text-gray-800">{doctorProfile.name}</h3>
             <p className="text-gray-600">{doctorProfile.specialization}</p>
             <p className="text-gray-500">{doctorProfile.qualification}</p>
-            <p className="text-gray-500">Experience: {doctorProfile.experience_years} yrs</p>
+            <p className="text-gray-500">Experience: {doctorProfile.experience_years || "—"} yrs</p>
           </div>
         </div>
       )}
@@ -119,8 +117,8 @@ const PatientAppointment = () => {
         >
           <option value="">Select Doctor</option>
           {doctors.map((doc) => (
-            <option key={doc.custom_id} value={doc.custom_id}>
-              {doc.full_name} ({doc.specialization})
+            <option key={doc.id} value={doc.id}>
+              {doc.name} ({doc.specialization})
             </option>
           ))}
         </select>
@@ -155,11 +153,9 @@ const PatientAppointment = () => {
           <p className="text-gray-500 col-span-full">No appointments yet</p>
         ) : (
           appointments.map((appt) => {
-            // Status-based colors
-            let bgColor = "";
-            let textColor = "";
-            let borderColor = "";
-
+            let bgColor = "",
+              textColor = "",
+              borderColor = "";
             switch (appt.status.toLowerCase()) {
               case "confirmed":
                 bgColor = "bg-green-50";
@@ -180,21 +176,12 @@ const PatientAppointment = () => {
                 bgColor = "bg-gray-50";
                 textColor = "text-gray-700";
                 borderColor = "border-gray-300";
-                break;
             }
-
             return (
               <div
                 key={appt.id}
                 className={`flex gap-4 items-center p-4 rounded-xl shadow border-l-4 transition hover:shadow-md animate-fadeIn ${bgColor} ${borderColor}`}
               >
-                {appt.doctor_profile_image && (
-                  <img
-                    src={`${STATIC_BASE_URL}/${appt.doctor_profile_image}`}
-                    alt={appt.doctor_name}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-indigo-100"
-                  />
-                )}
                 <div className="flex-1">
                   <p>
                     Doctor: <strong>{appt.doctor_name}</strong>

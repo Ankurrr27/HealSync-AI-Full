@@ -67,6 +67,8 @@ function App() {
           <Route path="/" element={<WelcomePage />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/ai" element={<AI />} />
+
 
           {/* Patient-specific routes */}
           <Route path="/patient/:custom_id" element={<UserLayout />}>
