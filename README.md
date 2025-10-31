@@ -1,4 +1,4 @@
-# 🚑 HealSync – Role-Based Health Management Web App
+# 🚑 HealSync – Role-Based Health Management unified platform
 
 **HealSync** is a modern, secure, and responsive web application for managing healthcare data. It supports both **patients** and **doctors**, offering role-based dashboards, medical records management, appointment scheduling, and AI-powered health assistance.
 
