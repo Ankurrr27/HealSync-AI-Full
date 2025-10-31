@@ -122,7 +122,7 @@ const PatientProfile = () => {
   }
 
   return (
-    <div className="md:bg-gradient-to-br md:from-blue-50 md:to-blue-200 min-h-90vh flex justify-center items-center px-4 py-1">
+    <div className=" min-h-90vh flex justify-center items-center px-4 py-1">
       <div className="w-full max-w-6xl bg-white/90  rounded-3xl  p-4 md:p-12 grid md:grid-cols-3 gap-8">
         {/* --- LEFT PANEL --- */}
         <div className="md:col-span-1 flex flex-col items-center p-6 bg-white rounded-2xl    transition-all duration-300">
