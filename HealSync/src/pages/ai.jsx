@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { patientData } from "./patientData"; // make sure this file exports correctly
+import { patientData } from "./patientData"; // ensure you export properly from patientData.js
 
-// --- Custom CSS animations ---
 const style = `
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
@@ -32,7 +31,6 @@ export default function AI() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // --- Detect available Gemini model ---
   const findAvailableGeminiModel = async () => {
     if (!apiKey) throw new Error("VITE_GEMINI_API_KEY not set in .env");
     if (modelCacheRef.current) return modelCacheRef.current;
@@ -48,73 +46,52 @@ export default function AI() {
     return modelCacheRef.current;
   };
 
-  // --- Core Gemini call ---
   const callGenerateContent = async (modelName, prompt) => {
     const url = `https://generativelanguage.googleapis.com/v1/${modelName}:generateContent?key=${apiKey}`;
-
-    const body = {
-      contents: [{ parts: [{ text: prompt }] }],
-    };
-
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
     });
 
-    if (!res.ok) {
-      const txt = await res.text();
-      console.error("generateContent error", res.status, txt);
-      throw new Error(`generateContent failed: ${res.status}`);
-    }
-
+    if (!res.ok) throw new Error(`generateContent failed: ${res.status}`);
     const json = await res.json();
     let text =
       json?.candidates?.[0]?.content?.parts?.[0]?.text ??
       json?.output?.[0]?.content?.parts?.[0]?.text ??
       json?.candidates?.[0]?.content?.[0]?.text ??
-      JSON.stringify(json, null, 2);
+      "Sorry, no response.";
 
-    // ✅ Clean unwanted markdown symbols
-    text = text.replace(/\\/g, "").replace(/\*/g, "");
-
-    return text.trim();
+    return text.replace(/\\/g, "").replace(/\*/g, "").trim();
   };
 
-  // --- Build prompt with patient info ---
-  const buildPromptWithPatient = (userQuery) => {
-    return `
+  const buildPromptWithPatient = (userQuery) => `
 You are Heal Singh, a friendly digital health assistant. Use the following patient record to give relevant and concise advice.
 
 Patient Record:
 ${JSON.stringify(patientData, null, 2)}
 
 Instructions:
-- Do not repeat the patient's name in your response.
-- Avoid using bold or markdown.
-- For greetings or casual talk, respond naturally without medical advice.
-- Give short, factual, and easy-to-understand answers.
+- Avoid repeating the patient's name.
+- Respond naturally and briefly.
+- Keep tone friendly and factual.
 
 User Question:
 ${userQuery}
-    `.trim();
-  };
+`;
 
-  // --- Send to Gemini ---
   const sendToGemini = async (userQuery) => {
     try {
       if (!apiKey) return "Missing API key. Please configure your .env file.";
       const modelName = await findAvailableGeminiModel();
       const prompt = buildPromptWithPatient(userQuery);
-      const aiText = await callGenerateContent(modelName, prompt);
-      return aiText;
+      return await callGenerateContent(modelName, prompt);
     } catch (err) {
-      console.error("sendToGemini error:", err);
-      return "Sorry, I couldn't contact the AI service. Please try again later.";
+      console.error(err);
+      return "Sorry, I couldn't contact the AI service. Try again later.";
     }
   };
 
-  // --- Handle message send ---
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -128,43 +105,37 @@ ${userQuery}
     setIsTyping(false);
   };
 
-  // --- Prompt buttons ---
   const handlePromptClick = (prompt) => {
     setInput(prompt);
     handleSendMessage({ preventDefault: () => {} });
   };
 
- const prompts = [
-  "What are signs of the flu?",
-  "How does fasting help the body?",
-  "What are the side effects of painkillers?",
-  "Why is the Mediterranean diet healthy?",
-  "Easy stretches for back pain.",
-  "How much water should I drink?",
-  "What’s a normal heart rate?",
-  "How to sleep better?",
-  "Can stress make you sick?",
-  "Cold vs allergies — what’s the difference?",
-];
-
+  const prompts = [
+    "What are common symptoms of the flu?",
+    "How does intermittent fasting work?",
+    "Explain the side effects of Ibuprofen.",
+    "Best stretches for lower back pain.",
+    "How much water should I drink daily?",
+    "Tips for better sleep hygiene.",
+  ];
   const scrollingPrompts = [...prompts, ...prompts];
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-100 to-blue-50 bg-fixed font-sans">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-100 to-blue-50 font-sans">
       <style>{style}</style>
 
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200 shadow-md sticky top-0 z-10">
+      <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
         <div className="flex items-center space-x-2">
           
-          <h1 className="text-xl md:text-2xl font-bold text-gray-800">
-            Heal Singh AI 
+          <h1 className="text-lg sm:text-xl font-bold text-gray-800">
+            Digital Health Companion
           </h1>
         </div>
         <button
           onClick={() => window.history.back()}
-          className="text-gray-500 hover:text-blue-600 transition-colors flex items-center p-1 rounded-full hover:bg-gray-100"
-          aria-label="Go back to home page"
+          className="text-gray-500 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-gray-100"
+          aria-label="Go back"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -183,26 +154,25 @@ ${userQuery}
         </button>
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 ">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-4">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center h-full  text-center">
-            <h2 className="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-black p-2 mt-20">
-              Heal Singh AI
+          <div className="flex flex-col items-center justify-center text-center pt-16 px-3">
+            <h2 className="text-4xl sm:text-5xl font-extrabold bg-clip-text text-blue-600 to-black">
+              Heal <span className="text-black">Singh AI</span>
             </h2>
-            <p className="text-gray-900 text-lg mb-6 font-bold">
-              Welcome! How can I assist with your health today?
+            <p className="text-gray-700 text-base sm:text-lg mt-3 font-medium">
+              Hey there ! How can I assist with your health today?
             </p>
-            
 
             {/* Scrolling Prompts */}
-            <div className="w-full max-w-full mx-auto space-y-8 overflow-hidden">
+            <div className="w-full max-w-full mx-auto mt-10 space-y-6 overflow-hidden">
               <div className="flex animate-scroll-left whitespace-nowrap p-2 min-w-[200%]">
                 {scrollingPrompts.map((prompt, i) => (
                   <button
                     key={`r1-${i}`}
                     onClick={() => handlePromptClick(prompt)}
-                    className="flex-shrink-0 mr-3 p-3 bg-white border border-blue-200 text-blue-600 rounded-lg text-sm shadow-sm hover:bg-blue-50 transition-colors"
+                    className="flex-shrink-0 mr-3 px-3 py-2 bg-white border border-blue-200 text-blue-600 rounded-lg text-xs sm:text-sm shadow-sm hover:bg-blue-50"
                   >
                     {prompt}
                   </button>
@@ -214,7 +184,7 @@ ${userQuery}
                   <button
                     key={`r2-${i}`}
                     onClick={() => handlePromptClick(prompt)}
-                    className="flex-shrink-0 mr-3 p-3 bg-white border border-blue-200 text-blue-600 rounded-lg text-sm shadow-sm hover:bg-blue-50 transition-colors"
+                    className="flex-shrink-0 mr-3 px-3 py-2 bg-white border border-blue-200 text-blue-600 rounded-lg text-xs sm:text-sm shadow-sm hover:bg-blue-50"
                   >
                     {prompt}
                   </button>
@@ -232,7 +202,7 @@ ${userQuery}
             }`}
           >
             <div
-              className={`p-3 rounded-xl max-w-xs md:max-w-md shadow-md ${
+              className={`p-3 rounded-xl max-w-[85%] sm:max-w-md shadow-md ${
                 msg.sender === "user"
                   ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-none"
                   : "bg-gray-200 text-gray-800 rounded-bl-none"
@@ -245,7 +215,7 @@ ${userQuery}
 
         {isTyping && (
           <div className="flex justify-start message-enter">
-            <div className="bg-gray-200 text-gray-600 px-3 py-2 rounded-xl text-sm animate-pulse rounded-bl-none">
+            <div className="bg-gray-200 text-gray-600 px-3 py-2 rounded-xl text-sm animate-pulse">
               AI is typing...
             </div>
           </div>
@@ -256,7 +226,7 @@ ${userQuery}
       {/* Input */}
       <form
         onSubmit={handleSendMessage}
-        className="p-4 bg-white border-t border-gray-200 sticky bottom-0"
+        className="p-3 bg-white border-t border-gray-200 sticky bottom-0"
       >
         <div className="flex items-center space-x-2">
           <input
@@ -264,12 +234,12 @@ ${userQuery}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your health query..."
-            className="flex-1 p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 p-2 sm:p-3 border border-gray-300 rounded-full text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="submit"
             disabled={isTyping}
-            className={`p-3 text-white rounded-full transition-colors ${
+            className={`p-3 text-white rounded-full ${
               isTyping
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
@@ -277,7 +247,7 @@ ${userQuery}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 transform -rotate-45"
+              className="h-5 w-5 sm:h-6 sm:w-6 transform -rotate-45"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useOutletContext } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:5000/api"; // for appointments etc.
-const STATIC_BASE_URL = "http://localhost:5000"; // for images
+const API_BASE_URL = "http://localhost:5000/api";
+const STATIC_BASE_URL = "http://localhost:5000";
 
 const PatientAppointment = () => {
   const { custom_id } = useOutletContext();
@@ -15,7 +15,7 @@ const PatientAppointment = () => {
   const [appointmentDate, setAppointmentDate] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // fetch appointments from backend
+  // Fetch appointments from your backend
   const fetchAppointments = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/appointments/user/${custom_id}`);
@@ -25,21 +25,64 @@ const PatientAppointment = () => {
     }
   };
 
-  // fetch doctors from mock APIs
-  const fetchDoctors = async () => {
-    try {
-      const [chd, jpr] = await Promise.all([
-        axios.get("https://690485ce6b8dabde496414b4.mockapi.io/doctors/Chandigarh"),
-        axios.get("https://690485ce6b8dabde496414b4.mockapi.io/doctors/Jaipur"),
-      ]);
-      const merged = [...chd.data, ...jpr.data];
-      setDoctors(merged);
-    } catch (err) {
-      console.error("Error fetching doctors:", err);
-    }
-  };
+  // Fetch doctors only from MockAPI (Jaipur + Chandigarh)
+const fetchDoctors = async () => {
+  try {
+    const [backend, jaipur, chandigarh] = await Promise.all([
+      axios.get(`${API_BASE_URL}/appointments/doctors`), // from your DB
+      axios.get("https://690485ce6b8dabde496414b4.mockapi.io/doctors/Jaipur"),
+      axios.get("https://690485ce6b8dabde496414b4.mockapi.io/doctors/Chandigarh"),
+    ]);
 
-  // preview selected doctor from loaded list
+    // 🩺 Merge backend + mock data (with consistent avatar handling)
+    const merged = [
+      ...backend.data.map((doc) => ({
+        id: doc.custom_id,
+        name: doc.full_name,
+        specialization: doc.specialization,
+        qualification: doc.qualification,
+        experience_years: doc.experience_years,
+        avatar: doc.profile_image
+  ? `${STATIC_BASE_URL}/${doc.profile_image.replace(/^\/?/, "")}`
+  : "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
+
+        source: "backend",
+      })),
+      ...jaipur.data.map((d) => ({
+        id: d.id,
+        name: d.name || d.full_name || "Doctor",
+        specialization: d.specialization || d.field || "General Physician",
+        qualification: d.qualification || d.degree || "MBBS",
+        experience_years: d.experience || "2",
+        avatar:
+          d.avatar ||
+          d.photo ||
+          d.image ||
+          "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
+        source: "mock",
+      })),
+      ...chandigarh.data.map((d) => ({
+        id: d.id,
+        name: d.name || d.full_name || "Doctor",
+        specialization: d.specialization || d.field || "General Physician",
+        qualification: d.qualification || d.degree || "MBBS",
+        experience_years: d.experience || "2",
+        avatar:
+          d.avatar ||
+          d.photo ||
+          d.image ||
+          "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
+        source: "mock",
+      })),
+    ];
+
+    setDoctors(merged);
+  } catch (err) {
+    console.error("Error fetching doctors:", err);
+  }
+};
+
+
   const fetchDoctorProfile = (doctorId) => {
     const doc = doctors.find((d) => d.id === doctorId);
     setDoctorProfile(doc || null);
@@ -53,43 +96,38 @@ const PatientAppointment = () => {
     if (!selectedDoctor || !reason || !appointmentDate) {
       return alert("Select doctor, reason, and appointment date");
     }
+
+    const selectedDoc = doctors.find((d) => d.id === selectedDoctor);
+    if (!selectedDoc) return alert("Doctor not found!");
+
     try {
       await axios.post(`${API_BASE_URL}/appointments/book`, {
         user_id: custom_id,
-        doctor_id: selectedDoctor,
+        doctor_id: selectedDoctor, // Just send ID from mock data
+        doctor_name: selectedDoc.name,
         reason,
         appointment_date: appointmentDate,
       });
+
       setSelectedDoctor("");
       setDoctorProfile(null);
       setReason("");
       setAppointmentDate("");
       fetchAppointments();
-      alert("Appointment requested successfully");
+      alert("Appointment booked successfully!");
     } catch (err) {
-      console.error(err);
-      alert("Failed to book appointment");
+      console.error("Booking error:", err);
+      alert("Failed to book appointment.");
     }
   };
 
-  const handleDoctorChange = (e) => {
-    const doctorId = e.target.value;
-    setSelectedDoctor(doctorId);
-    fetchDoctorProfile(doctorId);
-  };
-
-  if (loading)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="w-16 h-16 border-4 border-indigo-400 border-dashed rounded-full animate-spin"></div>
-      </div>
-    );
+  if (loading) return null;
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8">
       <h2 className="text-3xl font-bold text-gray-800">Book an Appointment</h2>
 
-      {/* Doctor Profile Preview */}
+      {/* Doctor Preview */}
       {doctorProfile && (
         <div className="flex gap-4 items-center p-4 bg-white rounded-xl shadow hover:shadow-lg transition animate-fadeIn">
           {doctorProfile.avatar && (
@@ -103,7 +141,9 @@ const PatientAppointment = () => {
             <h3 className="text-lg font-bold text-gray-800">{doctorProfile.name}</h3>
             <p className="text-gray-600">{doctorProfile.specialization}</p>
             <p className="text-gray-500">{doctorProfile.qualification}</p>
-            <p className="text-gray-500">Experience: {doctorProfile.experience_years || "—"} yrs</p>
+            <p className="text-gray-500">
+              Experience: {doctorProfile.experience_years || "—"} yrs
+            </p>
           </div>
         </div>
       )}
@@ -112,7 +152,10 @@ const PatientAppointment = () => {
       <div className="flex flex-col md:flex-row gap-4 p-4 bg-white rounded-xl shadow hover:shadow-lg transition animate-fadeIn">
         <select
           value={selectedDoctor}
-          onChange={handleDoctorChange}
+          onChange={(e) => {
+            setSelectedDoctor(e.target.value);
+            fetchDoctorProfile(e.target.value);
+          }}
           className="border rounded px-3 py-2 w-full md:w-1/3"
         >
           <option value="">Select Doctor</option>
@@ -146,7 +189,7 @@ const PatientAppointment = () => {
         </button>
       </div>
 
-      {/* Patient Appointments */}
+      {/* Appointments List */}
       <h3 className="text-xl font-bold text-gray-800">Your Appointments</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {appointments.length === 0 ? (
@@ -156,7 +199,7 @@ const PatientAppointment = () => {
             let bgColor = "",
               textColor = "",
               borderColor = "";
-            switch (appt.status.toLowerCase()) {
+            switch (appt.status?.toLowerCase()) {
               case "confirmed":
                 bgColor = "bg-green-50";
                 textColor = "text-green-700";
@@ -177,10 +220,11 @@ const PatientAppointment = () => {
                 textColor = "text-gray-700";
                 borderColor = "border-gray-300";
             }
+
             return (
               <div
                 key={appt.id}
-                className={`flex gap-4 items-center p-4 rounded-xl shadow border-l-4 transition hover:shadow-md animate-fadeIn ${bgColor} ${borderColor}`}
+                className={`flex gap-4 items-center p-4 rounded-xl shadow border-l-4 transition hover:shadow-md ${bgColor} ${borderColor}`}
               >
                 <div className="flex-1">
                   <p>
