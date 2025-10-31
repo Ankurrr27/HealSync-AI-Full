@@ -11,6 +11,8 @@ const PatientAppointment = () => {
   const { custom_id } = useOutletContext();
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [selectedCity, setSelectedCity] = useState("All");
+
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [doctorProfile, setDoctorProfile] = useState(null);
@@ -43,32 +45,35 @@ const PatientAppointment = () => {
       ]);
 
       const merged = [
-        ...backend.data.map((doc) => ({
-          id: doc.custom_id,
-          name: doc.full_name,
-          specialization: doc.specialization,
-          qualification: doc.qualification,
-          experience_years: doc.experience_years,
-          avatar: doc.profile_image
-            ? `${STATIC_BASE_URL}/${doc.profile_image.replace(/^\/?/, "")}`
-            : "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
-          source: "backend",
-        })),
-        ...jaipur.data,
-        ...chandigarh.data,
-      ].map((d) => ({
-        id: d.id || d.custom_id,
-        name: d.name || d.full_name || "Doctor",
-        specialization: d.specialization || "General Physician",
-        qualification: d.qualification || "MBBS",
-        experience_years: d.experience_years || d.experience || "2",
-        avatar:
-          d.avatar ||
-          d.photo ||
-          d.image ||
-          "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
-        source: d.source || "mock",
-      }));
+  ...backend.data.map((doc) => ({
+    id: doc.custom_id,
+    name: doc.full_name,
+    specialization: doc.specialization,
+    qualification: doc.qualification,
+    experience_years: doc.experience_years,
+    avatar: doc.profile_image
+      ? `${STATIC_BASE_URL}/${doc.profile_image.replace(/^\/?/, "")}`
+      : "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
+    location: doc.location || doc.city || "Not specified",
+    source: "backend",
+  })),
+  ...jaipur.data.map((doc) => ({ ...doc, source: "Jaipur", location: "Jaipur" })),
+  ...chandigarh.data.map((doc) => ({ ...doc, source: "Chandigarh", location: "Chandigarh" })),
+].map((d) => ({
+  id: d.id || d.custom_id,
+  name: d.name || d.full_name || "Doctor",
+  specialization: d.specialization || "General Physician",
+  qualification: d.qualification || "MBBS",
+  experience_years: d.experience_years || d.experience || "2",
+  location: d.location || "Unknown",
+  avatar:
+    d.avatar ||
+    d.photo ||
+    d.image ||
+    "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
+  source: d.source || "mock",
+}));
+
 
       setDoctors(merged);
       setFilteredDoctors(merged);
@@ -113,16 +118,23 @@ const PatientAppointment = () => {
   }, []);
 
   // 🔹 Filter doctors
-  useEffect(() => {
-    if (!filterSpec) setFilteredDoctors(doctors);
-    else {
-      setFilteredDoctors(
-        doctors.filter((doc) =>
-          doc.specialization.toLowerCase().includes(filterSpec.toLowerCase())
-        )
-      );
-    }
-  }, [filterSpec, doctors]);
+useEffect(() => {
+  const filtered = doctors.filter((doc) => {
+    const matchSpec = filterSpec
+      ? doc.specialization.toLowerCase().includes(filterSpec.toLowerCase())
+      : true;
+
+    const matchCity =
+      selectedCity === "All"
+        ? true
+        : doc.source?.toLowerCase().includes(selectedCity.toLowerCase());
+
+    return matchSpec && matchCity; // both conditions must pass 💥
+  });
+
+  setFilteredDoctors(filtered);
+}, [filterSpec, selectedCity, doctors]);
+
 
   const handleBook = async () => {
     if (!selectedDoctor || !reason || !appointmentDate)
@@ -159,21 +171,39 @@ const PatientAppointment = () => {
       <h2 className="text-3xl font-bold text-black text-center">🩺 Book an Appointment</h2>
 
       {/* 🔹 Filter Section */}
-      <div className="flex flex-row  sm:flex-row gap-3 items-center justify-between bg-white p-2 md:p-4 rounded-xl shadow">
-        <input
-          type="text"
-          placeholder="Filter by specialization (e.g. Cardiologist)"
-          value={filterSpec}
-          onChange={(e) => setFilterSpec(e.target.value)}
-          className="border border-gray-300 text-xs md:text-sm px-4 py-2 rounded-md flex-1 focus:ring-2 focus:ring-indigo-400"
-        />
-        <button
-          onClick={() => setFilterSpec("")}
-          className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-md hover:bg-indigo-100 transition"
-        >
-          Clear
-        </button>
-      </div>
+    
+
+      <div className="flex flex-wrap gap-3 items-center justify-between bg-white p-2 md:p-4 rounded-xl shadow">
+  <input
+    type="text"
+    placeholder="Filter by specialization (e.g. Cardiologist)"
+    value={filterSpec}
+    onChange={(e) => setFilterSpec(e.target.value)}
+    className="border border-gray-300 text-xs md:text-sm px-4 py-2 rounded-md flex-1 focus:ring-2 focus:ring-indigo-400"
+  />
+
+  <select
+    value={selectedCity}
+    onChange={(e) => setSelectedCity(e.target.value)}
+    className="border border-gray-300 text-xs md:text-sm px-4 py-2 rounded-md focus:ring-2 focus:ring-indigo-400"
+  >
+    <option value="All">All Cities</option>
+    <option value="Jaipur">Jaipur</option>
+    <option value="Chandigarh">Chandigarh</option>
+    <option value="backend">Backend (Other)</option>
+  </select>
+
+  <button
+    onClick={() => {
+      setFilterSpec("");
+      setSelectedCity("All");
+    }}
+    className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-md hover:bg-indigo-100 transition"
+  >
+    Clear
+  </button>
+</div>
+
 
       {/* 🔹 Doctor Preview */}
       <AnimatePresence>
@@ -193,6 +223,10 @@ const PatientAppointment = () => {
               <h3 className="text-lg font-bold text-gray-800">{doctorProfile.name}</h3>
               <p className="text-gray-600">{doctorProfile.specialization}</p>
               <p className="text-gray-500 text-sm">{doctorProfile.qualification}</p>
+              <p className="text-gray-500 text-sm">
+  🏥 {doctorProfile.location || "Address not available"}
+</p>
+
               <p className="text-gray-500 text-sm">
                 Experience: {doctorProfile.experience_years || "—"} yrs
               </p>

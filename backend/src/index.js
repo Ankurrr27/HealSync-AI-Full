@@ -11,6 +11,8 @@ import doctorProfileRoutes from "./routes/doctorProfileRoutes.js";
 import appointmentsRoutes from "./routes/appointmentsRoutes.js";
 import userJSONRoutes from "./routes/userJSONRoutes.js"; // 👈 NEW IMPORT
 import reminderRoutes from "./routes/reminderRoutes.js"; // ✅ Twilio reminders route
+import medicineRoutes from "./routes/medicineRoutes.js";
+
 
 dotenv.config();
 const app = express();
@@ -28,6 +30,8 @@ app.use("/api/doctor", doctorProfileRoutes);
 app.use("/api/appointments", appointmentsRoutes);
 app.use("/api/json", userJSONRoutes);
 app.use("/api/reminders", reminderRoutes); // ✅ Twilio + cron reminder routes
+app.use("/api/medicines", medicineRoutes);
+
 
 // 🌍 Start server
 app.listen(5000, () =>

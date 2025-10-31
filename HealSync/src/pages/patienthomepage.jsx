@@ -63,23 +63,28 @@ const DoctorCard = ({ doctor }) => (
       src={
         doctor.profile_image
           ? `${STATIC_BASE_URL}/${doctor.profile_image}`
-          : "https://via.placeholder.com/80"
+          : "https://cdn-icons-png.flaticon.com/512/3774/3774299.png"
       }
       alt={doctor.full_name}
       className="w-20 h-20 rounded-full border-2 border-indigo-100 object-cover"
     />
+
     <div className="flex-1">
       <h3 className="text-lg font-bold text-gray-800">{doctor.full_name}</h3>
       <p className="text-sm text-gray-500">
         {doctor.specialization || "General Practitioner"}
       </p>
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-gray-600">
+        🏥 {doctor.clinic_address || doctor.location || "Address not available"}
+      </p>
+      <p className="text-xs text-gray-400 mt-1">
         Next Appointment:{" "}
         {doctor.next_appointment_date
           ? new Date(doctor.next_appointment_date).toLocaleDateString()
           : "N/A"}
       </p>
     </div>
+
     <Link
       to={`/doctor/${doctor.custom_id}`}
       className="text-indigo-600 font-semibold hover:underline text-sm"
@@ -304,7 +309,7 @@ const PatientHomepage = () => {
           </p>
         </div>
         <Link
-          to="settings"
+          
           className="flex items-center text-xs sm:text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full hover:bg-gray-200 transition ring-1 ring-gray-300"
         >
           <Cog6ToothIcon className="w-4 h-4 mr-1 text-gray-500" /> Settings
