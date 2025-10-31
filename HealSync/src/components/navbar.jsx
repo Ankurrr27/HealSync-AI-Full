@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import axios from "axios";
 import {
-  UserCircleIcon,
   ArrowRightOnRectangleIcon,
   BellIcon,
   Bars3Icon,
@@ -11,6 +11,7 @@ import {
 const Navbar = () => {
   const [customId, setCustomId] = useState(null);
   const [role, setRole] = useState(null);
+  const [profilePic, setProfilePic] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -19,13 +20,38 @@ const Navbar = () => {
     if (user && user.custom_id) {
       setCustomId(user.custom_id);
       setRole(user.role);
+
+      // Check local first
+      if (user.profilePic) {
+        setProfilePic(user.profilePic);
+      } else {
+        fetchProfilePic(user.custom_id, user);
+      }
     }
   }, []);
+
+  const fetchProfilePic = async (custom_id, user) => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/profile/${custom_id}`);
+      if (res.data?.profile_image) {
+        const imgUrl = res.data.profile_image.startsWith("http")
+          ? res.data.profile_image
+          : `http://localhost:5000/${res.data.profile_image}`;
+        setProfilePic(imgUrl);
+        localStorage.setItem("user", JSON.stringify({ ...user, profilePic: imgUrl }));
+      } else {
+        setProfilePic(null);
+      }
+    } catch (error) {
+      console.error("Error fetching profile picture:", error);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     setCustomId(null);
     setRole(null);
+    setProfilePic(null);
     window.location.href = "/login";
   };
 
@@ -53,27 +79,18 @@ const Navbar = () => {
               Dashboard
             </Link>
             {role === "patient" && (
-              <Link
-                to={`/${role}/${customId}/records`}
-                className={navLinkClass}
-              >
+              <Link to={`/${role}/${customId}/records`} className={navLinkClass}>
                 Records
               </Link>
             )}
-            <Link
-              to={`/${role}/${customId}/appointments`}
-              className={navLinkClass}
-            >
+            <Link to={`/${role}/${customId}/appointments`} className={navLinkClass}>
               Appointments
             </Link>
             <Link to={`/${role}/${customId}/ai`} className={navLinkClass}>
               AI
             </Link>
             {role === "patient" && (
-              <Link
-                to={`/${role}/${customId}/posturecorrector`}
-                className={navLinkClass}
-              >
+              <Link to={`/${role}/${customId}/posturecorrector`} className={navLinkClass}>
                 Posture Corrector
               </Link>
             )}
@@ -108,13 +125,25 @@ const Navbar = () => {
                   <BellIcon className="w-6 h-6" />
                   <span className="absolute top-0.5 right-0.5 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>
                 </Link>
+
                 <Link
                   to={`/${role}/${customId}/profile`}
-                  className="text-gray-600 hover:text-indigo-700 p-2 rounded-full transition flex items-center"
+                  className="p-1 rounded-full hover:ring-2 hover:ring-indigo-200 transition"
                   title="Profile"
                 >
-                  <UserCircleIcon className="w-7 h-7" />
+                  {profilePic ? (
+                    <img
+                      src={profilePic}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full object-cover border border-gray-300"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-200 border border-gray-300 flex items-center justify-center text-gray-500 text-sm">
+                      ?
+                    </div>
+                  )}
                 </Link>
+
                 <button
                   onClick={handleLogout}
                   className="flex items-center bg-red-500 text-white text-sm font-medium px-4 py-2 rounded-full hover:bg-red-600 transition duration-300 shadow-sm"
@@ -129,11 +158,7 @@ const Navbar = () => {
                 className="lg:hidden p-2 rounded-md text-gray-600 hover:text-indigo-700 hover:bg-gray-100 transition"
                 onClick={() => setMobileOpen(!mobileOpen)}
               >
-                {mobileOpen ? (
-                  <XMarkIcon className="w-6 h-6" />
-                ) : (
-                  <Bars3Icon className="w-6 h-6" />
-                )}
+                {mobileOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
               </button>
             </>
           )}
@@ -151,20 +176,14 @@ const Navbar = () => {
               Records
             </Link>
           )}
-          <Link
-            to={`/${role}/${customId}/appointments`}
-            className={navLinkClass}
-          >
+          <Link to={`/${role}/${customId}/appointments`} className={navLinkClass}>
             Appointments
           </Link>
           <Link to={`/${role}/${customId}/ai`} className={navLinkClass}>
             AI
           </Link>
           {role === "patient" && (
-            <Link
-              to={`/${role}/${customId}/posturecorrector`}
-              className={navLinkClass}
-            >
+            <Link to={`/${role}/${customId}/posturecorrector`} className={navLinkClass}>
               Posture Corrector
             </Link>
           )}
