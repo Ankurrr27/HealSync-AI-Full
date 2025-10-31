@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiX, FiStar } from "react-icons/fi";
 import { useOutletContext } from "react-router-dom";
 
 const API_BASE_URL = "http://localhost:5000/api";
@@ -9,13 +11,19 @@ const PatientAppointment = () => {
   const { custom_id } = useOutletContext();
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [doctorProfile, setDoctorProfile] = useState(null);
   const [reason, setReason] = useState("");
   const [appointmentDate, setAppointmentDate] = useState("");
   const [loading, setLoading] = useState(true);
+  const [filterSpec, setFilterSpec] = useState("");
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [tempFeedback, setTempFeedback] = useState("");
+  const [tempRating, setTempRating] = useState(0);
+  const [canGiveFeedback, setCanGiveFeedback] = useState(false);
 
-  // 🔹 Fetch appointments from your backend
+  // 🩵 Fetch appointments
   const fetchAppointments = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/appointments/user/${custom_id}`);
@@ -25,7 +33,7 @@ const PatientAppointment = () => {
     }
   };
 
-  // 🔹 Fetch doctors from both backend and mock APIs
+  // 🩵 Fetch doctors
   const fetchDoctors = async () => {
     try {
       const [backend, jaipur, chandigarh] = await Promise.all([
@@ -46,83 +54,79 @@ const PatientAppointment = () => {
             : "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
           source: "backend",
         })),
-        ...jaipur.data.map((d) => ({
-          id: d.id,
-          name: d.name || d.full_name || "Doctor",
-          specialization: d.specialization || "General Physician",
-          qualification: d.qualification || "MBBS",
-          experience_years: d.experience || "2",
-          avatar:
-            d.avatar ||
-            d.photo ||
-            d.image ||
-            "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
-          source: "mock",
-        })),
-        ...chandigarh.data.map((d) => ({
-          id: d.id,
-          name: d.name || d.full_name || "Doctor",
-          specialization: d.specialization || "General Physician",
-          qualification: d.qualification || "MBBS",
-          experience_years: d.experience || "2",
-          avatar:
-            d.avatar ||
-            d.photo ||
-            d.image ||
-            "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
-          source: "mock",
-        })),
-      ];
+        ...jaipur.data,
+        ...chandigarh.data,
+      ].map((d) => ({
+        id: d.id || d.custom_id,
+        name: d.name || d.full_name || "Doctor",
+        specialization: d.specialization || "General Physician",
+        qualification: d.qualification || "MBBS",
+        experience_years: d.experience_years || d.experience || "2",
+        avatar:
+          d.avatar ||
+          d.photo ||
+          d.image ||
+          "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
+        source: d.source || "mock",
+      }));
 
       setDoctors(merged);
+      setFilteredDoctors(merged);
     } catch (err) {
       console.error("Error fetching doctors:", err);
     }
   };
 
-  // 🔹 Fetch specific doctor profile from backend when selected
-const fetchDoctorProfile = async (doctorId) => {
-  const selected = doctors.find((d) => d.id === doctorId);
-
-  if (selected?.source === "mock") {
-    setDoctorProfile(selected);
-  } else {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/doctor/${doctorId}`);
-      const data = res.data;
-
-      const imagePath = data.profile_image
-        ? data.profile_image.replace(/^\/?/, "")
-        : null;
-
-      const docProfile = {
-        id: data.custom_id,
-        name: data.full_name,
-        specialization: data.specialization,
-        qualification: data.qualification,
-        experience_years: data.experience_years,
-        avatar: imagePath
-          ? `http://localhost:5000/${imagePath}`
-          : "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
-      };
-
-      setDoctorProfile(docProfile);
-    } catch (err) {
-      console.error("Error fetching doctor profile:", err);
-      setDoctorProfile(selected || null);
+  // 🩵 Fetch doctor profile
+  const fetchDoctorProfile = async (doctorId) => {
+    const selected = doctors.find((d) => d.id === doctorId);
+    if (selected?.source === "mock") {
+      setDoctorProfile(selected);
+    } else {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/doctor/${doctorId}`);
+        const data = res.data;
+        setDoctorProfile({
+          id: data.custom_id,
+          name: data.full_name,
+          specialization: data.specialization,
+          qualification: data.qualification,
+          experience_years: data.experience_years,
+          avatar: data.profile_image
+            ? `http://localhost:5000/${data.profile_image.replace(/^\/?/, "")}`
+            : "https://cdn-icons-png.flaticon.com/512/3774/3774299.png",
+        });
+      } catch {
+        setDoctorProfile(selected || null);
+      }
     }
-  }
-};
 
+    // check if user has appointment with this doctor
+    const hasAppointment = appointments.some(
+      (a) => a.doctor_id === doctorId || a.doctor_name === selected?.name
+    );
+    setCanGiveFeedback(hasAppointment);
+  };
 
   useEffect(() => {
     Promise.all([fetchAppointments(), fetchDoctors()]).finally(() => setLoading(false));
   }, []);
 
-  const handleBook = async () => {
-    if (!selectedDoctor || !reason || !appointmentDate) {
-      return alert("Select doctor, reason, and appointment date");
+  // 🔹 Filter doctors
+  useEffect(() => {
+    if (!filterSpec) setFilteredDoctors(doctors);
+    else {
+      setFilteredDoctors(
+        doctors.filter((doc) =>
+          doc.specialization.toLowerCase().includes(filterSpec.toLowerCase())
+        )
+      );
     }
+  }, [filterSpec, doctors]);
+
+  const handleBook = async () => {
+    if (!selectedDoctor || !reason || !appointmentDate)
+      return alert("Please fill all details before booking!");
 
     const selectedDoc = doctors.find((d) => d.id === selectedDoctor);
     if (!selectedDoc) return alert("Doctor not found!");
@@ -142,53 +146,100 @@ const fetchDoctorProfile = async (doctorId) => {
       setAppointmentDate("");
       fetchAppointments();
       alert("Appointment booked successfully!");
-    } catch (err) {
-      console.error("Booking error:", err);
+    } catch {
       alert("Failed to book appointment.");
     }
   };
 
-  if (loading) return null;
+  if (loading)
+    return <div className="text-center py-10 text-gray-500 animate-pulse">Loading...</div>;
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8">
-      <h2 className="text-3xl font-bold text-gray-800">Book an Appointment</h2>
+      <h2 className="text-3xl font-bold text-black text-center">🩺 Book an Appointment</h2>
+
+      {/* 🔹 Filter Section */}
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white p-4 rounded-xl shadow">
+        <input
+          type="text"
+          placeholder="Filter by specialization (e.g. Cardiologist)"
+          value={filterSpec}
+          onChange={(e) => setFilterSpec(e.target.value)}
+          className="border border-gray-300 px-4 py-2 rounded-md flex-1 focus:ring-2 focus:ring-indigo-400"
+        />
+        <button
+          onClick={() => setFilterSpec("")}
+          className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-md hover:bg-indigo-100 transition"
+        >
+          Clear
+        </button>
+      </div>
 
       {/* 🔹 Doctor Preview */}
-      {doctorProfile && (
-        <div className="flex gap-4 items-center p-4 bg-white rounded-xl shadow hover:shadow-lg transition animate-fadeIn">
-          <img
-            src={
-              doctorProfile.avatar?.startsWith("http")
-                ? doctorProfile.avatar
-                : `${STATIC_BASE_URL}/${doctorProfile.avatar}`
-            }
-            alt={doctorProfile.name}
-            className="w-20 h-20 rounded-full object-cover border-2 border-indigo-100"
-          />
-          <div>
-            <h3 className="text-lg font-bold text-gray-800">{doctorProfile.name}</h3>
-            <p className="text-gray-600">{doctorProfile.specialization}</p>
-            <p className="text-gray-500">{doctorProfile.qualification}</p>
-            <p className="text-gray-500">
-              Experience: {doctorProfile.experience_years || "—"} yrs
-            </p>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {doctorProfile && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex gap-4 items-center p-4 bg-white rounded-xl shadow-lg border border-gray-100"
+          >
+            <img
+              src={doctorProfile.avatar}
+              alt={doctorProfile.name}
+              className="w-20 h-20 rounded-full object-cover border-2 border-indigo-100"
+            />
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-gray-800">{doctorProfile.name}</h3>
+              <p className="text-gray-600">{doctorProfile.specialization}</p>
+              <p className="text-gray-500 text-sm">{doctorProfile.qualification}</p>
+              <p className="text-gray-500 text-sm">
+                Experience: {doctorProfile.experience_years || "—"} yrs
+              </p>
+
+              {/* Ratings always visible */}
+              <div className="flex items-center mt-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <FiStar
+                    key={i}
+                    className={`text-xl cursor-pointer transition ${
+                      i < tempRating ? "text-yellow-400" : "text-gray-300"
+                    }`}
+                    onClick={() => setTempRating(i + 1)}
+                  />
+                ))}
+              </div>
+
+              {/* Feedback restricted */}
+              {canGiveFeedback ? (
+                <button
+                  onClick={() => setShowProfileDialog(true)}
+                  className="mt-2 px-4 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+                >
+                  Give Feedback
+                </button>
+              ) : (
+                <p className="mt-2 text-sm text-gray-500 italic">
+                  Book appointment to give feedback
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 🔹 Booking Form */}
-      <div className="flex flex-col md:flex-row gap-4 p-4 bg-white rounded-xl shadow hover:shadow-lg transition animate-fadeIn">
+      <div className="flex flex-col md:flex-row gap-4 p-4 bg-white rounded-xl shadow-lg border border-gray-100">
         <select
           value={selectedDoctor}
           onChange={(e) => {
             setSelectedDoctor(e.target.value);
             fetchDoctorProfile(e.target.value);
           }}
-          className="border rounded px-3 py-2 w-full md:w-1/3"
+          className="border rounded px-3 py-2 w-full md:w-1/3 focus:ring-2 focus:ring-indigo-400"
         >
           <option value="">Select Doctor</option>
-          {doctors.map((doc) => (
+          {filteredDoctors.map((doc) => (
             <option key={doc.id} value={doc.id}>
               {doc.name} ({doc.specialization})
             </option>
@@ -199,7 +250,7 @@ const fetchDoctorProfile = async (doctorId) => {
           type="datetime-local"
           value={appointmentDate}
           onChange={(e) => setAppointmentDate(e.target.value)}
-          className="border rounded px-3 py-2 w-full md:w-1/3"
+          className="border rounded px-3 py-2 w-full md:w-1/3 focus:ring-2 focus:ring-indigo-400"
         />
 
         <input
@@ -207,7 +258,7 @@ const fetchDoctorProfile = async (doctorId) => {
           placeholder="Reason for visit"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          className="border rounded px-3 py-2 w-full md:flex-1"
+          className="border rounded px-3 py-2 w-full md:flex-1 focus:ring-2 focus:ring-indigo-400"
         />
 
         <button
@@ -219,59 +270,85 @@ const fetchDoctorProfile = async (doctorId) => {
       </div>
 
       {/* 🔹 Appointment List */}
-      <h3 className="text-xl font-bold text-gray-800">Your Appointments</h3>
+      <h3 className="text-xl font-semibold text-gray-800">Your Appointments</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {appointments.length === 0 ? (
-          <p className="text-gray-500 col-span-full">No appointments yet</p>
+          <p className="text-gray-500 col-span-full text-center">No appointments yet 🕓</p>
         ) : (
           appointments.map((appt) => {
-            let bgColor = "",
-              textColor = "",
-              borderColor = "";
-            switch (appt.status?.toLowerCase()) {
-              case "confirmed":
-                bgColor = "bg-green-50";
-                textColor = "text-green-700";
-                borderColor = "border-green-400";
-                break;
-              case "pending":
-                bgColor = "bg-yellow-50";
-                textColor = "text-yellow-700";
-                borderColor = "border-yellow-400";
-                break;
-              case "rejected":
-                bgColor = "bg-red-50";
-                textColor = "text-red-700";
-                borderColor = "border-red-400";
-                break;
-              default:
-                bgColor = "bg-gray-50";
-                textColor = "text-gray-700";
-                borderColor = "border-gray-300";
-            }
+            const status = appt.status?.toLowerCase();
+            const colors = {
+              confirmed: "bg-green-50 border-green-400 text-green-700",
+              pending: "bg-yellow-50 border-yellow-400 text-yellow-700",
+              rejected: "bg-red-50 border-red-400 text-red-700",
+              default: "bg-gray-50 border-gray-300 text-gray-700",
+            };
+            const colorSet = colors[status] || colors.default;
 
             return (
-              <div
+              <motion.div
                 key={appt.id}
-                className={`flex gap-4 items-center p-4 rounded-xl shadow border-l-4 transition hover:shadow-md ${bgColor} ${borderColor}`}
+                whileHover={{ scale: 1.02 }}
+                className={`p-4 rounded-xl shadow border-l-4 ${colorSet}`}
               >
-                <div className="flex-1">
-                  <p>
-                    Doctor: <strong>{appt.doctor_name}</strong>
-                  </p>
-                  <p className={textColor}>
-                    Status: <strong className="capitalize">{appt.status}</strong>
-                  </p>
-                  <p>Reason: {appt.reason}</p>
-                  {appt.appointment_date && (
-                    <p>Date: {new Date(appt.appointment_date).toLocaleString()}</p>
-                  )}
-                </div>
-              </div>
+                <p>
+                  Doctor: <strong>{appt.doctor_name}</strong>
+                </p>
+                <p>
+                  Status:{" "}
+                  <strong className="capitalize">{appt.status || "Unknown"}</strong>
+                </p>
+                <p>Reason: {appt.reason}</p>
+                {appt.appointment_date && (
+                  <p>Date: {new Date(appt.appointment_date).toLocaleString()}</p>
+                )}
+              </motion.div>
             );
           })
         )}
       </div>
+
+      {/* 🔹 Feedback Dialog */}
+      <AnimatePresence>
+        {showProfileDialog && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="bg-white rounded-lg shadow-xl p-6 w-96 relative"
+            >
+              <button
+                onClick={() => setShowProfileDialog(false)}
+                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+              >
+                <FiX size={20} />
+              </button>
+
+              <h3 className="text-xl font-bold mb-2 text-indigo-700">
+                {doctorProfile?.name}
+              </h3>
+              <p className="text-gray-600 mb-2">{doctorProfile?.specialization}</p>
+              <textarea
+                placeholder="Leave feedback..."
+                value={tempFeedback}
+                onChange={(e) => setTempFeedback(e.target.value)}
+                className="w-full border rounded-md p-2 h-24 mb-3"
+              />
+              <button
+                onClick={() => setShowProfileDialog(false)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded w-full hover:bg-indigo-700 transition"
+              >
+                Close
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
