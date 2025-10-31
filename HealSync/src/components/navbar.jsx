@@ -190,8 +190,8 @@ const Navbar = () => {
             AI
           </Link>
           {role === "patient" && (
-            <Link to={`/${role}/${customId}/posturecorrector`} className={navLinkClass}>
-              Posture Corrector
+            <Link to={`/${role}/${customId}/notification`} className={navLinkClass}>
+              Notification
             </Link>
           )}
           <hr className="w-full border-gray-200 my-1" />
