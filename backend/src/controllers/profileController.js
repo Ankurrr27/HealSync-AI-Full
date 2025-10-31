@@ -36,6 +36,7 @@ export const getProfile = async (req, res) => {
         current_address: "",
         profile_image: null,
         profile_url: null,
+        aadhaar_number: "", // 🆕 added field
       });
     }
 
@@ -68,6 +69,7 @@ export const upsertProfile = async (req, res) => {
       mobile_number = null,
       email = null,
       current_address = null,
+      aadhaar_number = null, // 🆕 added field
     } = req.body;
 
     // Validate user exists
@@ -77,6 +79,24 @@ export const upsertProfile = async (req, res) => {
     );
     if (!userExists.length)
       return res.status(400).json({ message: "User does not exist" });
+
+    // ✅ Validate Aadhaar (must be unique and 12 digits)
+    if (!aadhaar_number || !/^\d{12}$/.test(aadhaar_number)) {
+      return res
+        .status(400)
+        .json({ message: "Valid 12-digit Aadhaar number required" });
+    }
+
+    // Check if Aadhaar already exists for another user
+    const [aadhaarCheck] = await db.execute(
+      "SELECT custom_id FROM user_profiles WHERE aadhaar_number = ? AND custom_id != ?",
+      [aadhaar_number, custom_id]
+    );
+    if (aadhaarCheck.length) {
+      return res
+        .status(400)
+        .json({ message: "Aadhaar number already linked to another user" });
+    }
 
     // Handle image
     const profile_image = req.file ? req.file.path.replace(/\\/g, "/") : null;
@@ -101,8 +121,8 @@ export const upsertProfile = async (req, res) => {
     // UPSERT query
     await db.execute(
       `INSERT INTO user_profiles 
-        (custom_id, full_name, date_of_birth, gender, blood_group, primary_doctor, mobile_number, email, current_address, profile_image)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (custom_id, full_name, date_of_birth, gender, blood_group, primary_doctor, mobile_number, email, current_address, profile_image, aadhaar_number)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
          full_name=VALUES(full_name),
          date_of_birth=VALUES(date_of_birth),
@@ -112,7 +132,8 @@ export const upsertProfile = async (req, res) => {
          mobile_number=VALUES(mobile_number),
          email=VALUES(email),
          current_address=VALUES(current_address),
-         profile_image=COALESCE(VALUES(profile_image), profile_image)`,
+         profile_image=COALESCE(VALUES(profile_image), profile_image),
+         aadhaar_number=VALUES(aadhaar_number)`, // 🆕 added update
       [
         custom_id,
         full_name,
@@ -124,6 +145,7 @@ export const upsertProfile = async (req, res) => {
         email,
         current_address,
         profile_image,
+        aadhaar_number,
       ]
     );
 
