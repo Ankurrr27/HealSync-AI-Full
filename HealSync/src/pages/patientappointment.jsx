@@ -137,31 +137,35 @@ useEffect(() => {
 
 
   const handleBook = async () => {
-    if (!selectedDoctor || !reason || !appointmentDate)
-      return alert("Please fill all details before booking!");
+  if (!selectedDoctor || !reason || !appointmentDate)
+    return alert("Please fill all details before booking!");
 
-    const selectedDoc = doctors.find((d) => d.id === selectedDoctor);
-    if (!selectedDoc) return alert("Doctor not found!");
+  const selectedDoc = doctors.find((d) => d.id === selectedDoctor);
+  if (!selectedDoc) return alert("Doctor not found!");
 
-    try {
-      await axios.post(`${API_BASE_URL}/appointments/book`, {
-        user_id: custom_id,
-        doctor_id: selectedDoctor,
-        doctor_name: selectedDoc.name,
-        reason,
-        appointment_date: appointmentDate,
-      });
+  try {
+    await axios.post(`${API_BASE_URL}/appointments/book`, {
+      user_id: custom_id,
+      doctor_id: selectedDoctor,
+      doctor_name: selectedDoc.name,
+      doctor_address:
+        selectedDoc.address || selectedDoc.location || "Address not available",
+      reason,
+      appointment_date: appointmentDate,
+    });
 
-      setSelectedDoctor("");
-      setDoctorProfile(null);
-      setReason("");
-      setAppointmentDate("");
-      fetchAppointments();
-      alert("Appointment booked successfully!");
-    } catch {
-      alert("Failed to book appointment.");
-    }
-  };
+    setSelectedDoctor("");
+    setDoctorProfile(null);
+    setReason("");
+    setAppointmentDate("");
+    fetchAppointments();
+    alert("Appointment booked successfully!");
+  } catch (err) {
+    console.error("Booking error:", err);
+    alert("Failed to book appointment.");
+  }
+};
+
 
   if (loading)
     return <div className="text-center py-10 text-gray-500 animate-pulse">Loading...</div>;
