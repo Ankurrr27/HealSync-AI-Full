@@ -21,22 +21,28 @@ const Navbar = () => {
       setCustomId(user.custom_id);
       setRole(user.role);
 
-      // Check local first
       if (user.profilePic) {
         setProfilePic(user.profilePic);
       } else {
-        fetchProfilePic(user.custom_id, user);
+        fetchProfilePic(user.custom_id, user.role, user);
       }
     }
   }, []);
 
-  const fetchProfilePic = async (custom_id, user) => {
+  const fetchProfilePic = async (custom_id, role, user) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/profile/${custom_id}`);
-      if (res.data?.profile_image) {
-        const imgUrl = res.data.profile_image.startsWith("http")
-          ? res.data.profile_image
-          : `http://localhost:5000/${res.data.profile_image}`;
+      const apiUrl =
+        role === "doctor"
+          ? `http://localhost:5000/api/doctor/${custom_id}`
+          : `http://localhost:5000/api/profile/${custom_id}`;
+
+      const res = await axios.get(apiUrl);
+      const data = res.data;
+
+      if (data?.profile_image) {
+        const imgUrl = data.profile_image.startsWith("http")
+          ? data.profile_image
+          : `http://localhost:5000/${data.profile_image}`;
         setProfilePic(imgUrl);
         localStorage.setItem("user", JSON.stringify({ ...user, profilePic: imgUrl }));
       } else {
@@ -44,6 +50,7 @@ const Navbar = () => {
       }
     } catch (error) {
       console.error("Error fetching profile picture:", error);
+      setProfilePic(null);
     }
   };
 
@@ -187,9 +194,7 @@ const Navbar = () => {
               Posture Corrector
             </Link>
           )}
-
           <hr className="w-full border-gray-200 my-1" />
-
           <Link to={`/${role}/${customId}/profile`} className={navLinkClass}>
             Profile
           </Link>
