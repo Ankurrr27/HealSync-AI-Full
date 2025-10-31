@@ -45,8 +45,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-blue-200 px-4 sm:px-6 py-8">
-      <div className="flex flex-col lg:flex-row w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <div className="min-h-screen flex justify-center items-center  md:bg-blue-200 px-4 sm:px-6 py-8">
+      <div className="flex flex-col lg:flex-row w-full max-w-5xl bg-white rounded-2xl md:shadow-2xl overflow-hidden">
         {/* Left Side */}
         <div className="hidden lg:flex w-full lg:w-5/12 bg-blue-400 p-6 lg:p-10 flex-col justify-center items-center text-white">
           <h1 className="text-3xl lg:text-4xl font-extrabold mb-2 text-center">

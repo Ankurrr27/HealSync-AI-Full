@@ -42,8 +42,8 @@ const Signup = () => {
 
 
   return (
-    <div className="min-h-screen relative flex justify-center items-center p-4 bg-blue-200">
-      <div className="flex w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden relative border border-gray-100">
+    <div className="min-h-screen relative flex justify-center items-center p-4 md:bg-blue-200 bg-white">
+      <div className="flex w-full max-w-4xl bg-white rounded-2xl shadow-0 md:shadow-2xl overflow-hidden relative border border-gray-100">
         {/* LEFT SIDE: Image + Branding */}
         <div className="hidden lg:flex w-5/12 bg-blue-400 p-8 flex-col justify-center items-center relative text-white">
           <div className="relative z-10 text-center">
