@@ -79,7 +79,7 @@ const Login = () => {
               <input
                 type="email"
                 placeholder="Email"
-                className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-gray-800 text-sm sm:text-base"
+                className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-800 text-sm sm:text-base"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -93,7 +93,7 @@ const Login = () => {
                 required
               />
 
-              <button className="bg-blue-600 text-white py-3 rounded-lg mt-3 hover:bg-blue-700 transition-all shadow-md text-sm sm:text-base">
+              <button className="bg-blue-400 text-white py-3 rounded-lg mt-3 hover:bg-blue-600 transition-all shadow-md text-sm sm:text-base">
                 Log In
               </button>
             </form>
@@ -114,7 +114,7 @@ const Login = () => {
               Don't have an account?{" "}
               <Link
                 to="/signup"
-                className="text-indigo-600 font-semibold hover:text-indigo-700"
+                className="text-blue-600 font-semibold hover:text-indigo-700"
               >
                 Sign Up
               </Link>
