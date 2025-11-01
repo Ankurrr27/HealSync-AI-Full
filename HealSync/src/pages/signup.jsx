@@ -92,18 +92,18 @@ const Signup = () => {
                   onClick={() => setRole("patient")}
                   className={`flex-1 p-3 text-center rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                     role === "patient"
-                      ? "border-blue-600 bg-blue-50 shadow-md"
+                      ? "border-blue-400 bg-blue-50 shadow-md"
                       : "border-gray-300 hover:border-blue-400 bg-white"
                   }`}
                 >
                   <UserIcon
                     className={`w-6 h-6 mx-auto mb-1 ${
-                      role === "patient" ? "text-blue-600" : "text-gray-500"
+                      role === "patient" ? "text-blue-400" : "text-gray-500"
                     }`}
                   />
                   <span
                     className={`text-sm font-semibold ${
-                      role === "patient" ? "text-blue-700" : "text-gray-700"
+                      role === "patient" ? "text-blue-600" : "text-gray-700"
                     }`}
                   >
                     Patient
@@ -163,7 +163,7 @@ const Signup = () => {
               <input
                 type="text"
                 placeholder="Full Name"
-                className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-500 transition-all duration-200 text-gray-800"
+                className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-blue-500 transition-all duration-200 text-gray-800"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -171,7 +171,7 @@ const Signup = () => {
               <input
                 type="email"
                 placeholder="Email Address"
-                className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-500 transition-all duration-200 text-gray-800"
+                className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-blue-500 transition-all duration-200 text-gray-800"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -187,7 +187,7 @@ const Signup = () => {
 
               <button
                 type="submit"
-                className="bg-blue-600 text-white font-semibold text-base py-3 rounded-lg mt-3 hover:bg-indigo-700 active:scale-[.99] transition-all duration-200 shadow-xl shadow-indigo-600/30"
+                className="bg-blue-400 text-white font-semibold text-base py-3 rounded-lg mt-3 hover:bg-blue-600 active:scale-[.99] transition-all duration-200 shadow-xl shadow-indigo-600/30"
               >
                 Register as {role.charAt(0).toUpperCase() + role.slice(1)}
               </button>

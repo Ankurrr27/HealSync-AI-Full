@@ -1,7 +1,7 @@
 export const patientData = `
-Patient Name: Prachi Gupta
+Patient Name: Ankur Singh
 Age: 23
-Gender: Female
+Gender: male
 Blood Group: B+
 Allergies: None
 Past Records: Diagnosed with seasonal flu twice in 2024.
