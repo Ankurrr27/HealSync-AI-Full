@@ -105,7 +105,7 @@ const handleSubmit = async (e) => {
       <div className="w-full max-w-6xl rounded-3xl  p-4 md:p-12 grid md:grid-cols-3 gap-8">
         
         {/* --- LEFT PANEL --- */}
-        <div className="md:col-span-1 flex flex-col items-center p-6 bg-white rounded-2xl  border-gray-100 hover:shadow-2xl transition-all duration-300">
+        <div className="md:col-span-1 flex flex-col items-center p-6 bg-white rounded-2xl  border-gray-100 transition-all duration-300">
           
           {/* Profile Image */}
           <div className="w-56 h-68 overflow-hidden bg-gray-100 flex items-center justify-center shadow-inner border-4 border-white  mb-6 relative">
