@@ -105,7 +105,7 @@ useEffect(() => {
         <span>
           ⏰ If your number isn’t registered,{" "}
           <a
-            href="https://api.whatsapp.com/send/?phone=%2B14155238886&text=join+pitch-after&type=phone_number&app_absent=0"
+            href="https://api.whatsapp.com/send/?phone=%2B14155238886&text=join+themselves-middle&type=phone_number&app_absent=0"
             target="_blank"
             rel="noopener noreferrer"
             className="text-green-700 font-semibold hover:underline"
@@ -113,7 +113,7 @@ useEffect(() => {
             click here
           </a>{" "}
           and send{" "}
-          <code className="bg-green-100 px-1 rounded">join pitch-after</code>{" "}
+          <code className="bg-green-100 px-1 rounded">join themselves-middle</code>{" "}
           on WhatsApp.
         </span>
         <button
