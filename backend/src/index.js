@@ -9,7 +9,7 @@ import profileRoutes from "./routes/profileRoutes.js";
 import userRecordsRoutes from "./routes/userRecordsRoutes.js";
 import doctorProfileRoutes from "./routes/doctorProfileRoutes.js";
 import appointmentsRoutes from "./routes/appointmentsRoutes.js";
-import userJSONRoutes from "./routes/userJSONRoutes.js"; // 👈 NEW IMPORT
+import userJSONRoutes from "./routes/userJSONroutes.js"; // 👈 NEW IMPORT
 import reminderRoutes from "./routes/reminderRoutes.js"; // ✅ Twilio reminders route
 import medicineRoutes from "./routes/medicineRoutes.js";
 
