@@ -14,6 +14,7 @@ import reminderRoutes from "./routes/reminderRoutes.js"; // ✅ Twilio reminders
 import medicineRoutes from "./routes/medicineRoutes.js";
 
 
+
 dotenv.config();
 const app = express();
 
@@ -31,6 +32,10 @@ app.use("/api/appointments", appointmentsRoutes);
 app.use("/api/json", userJSONRoutes);
 app.use("/api/reminders", reminderRoutes); // ✅ Twilio + cron reminder routes
 app.use("/api/medicines", medicineRoutes);
+
+app.get("/", (req, res) => {
+  res.send("🔥 HealSync Backend is Live & Connected!");
+});
 
 
 // 🌍 Start server
