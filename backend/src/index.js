@@ -49,9 +49,11 @@ const frontendPath = path.join(__dirname, "dist"); // or "../client/dist" if kep
 app.use(express.static(frontendPath));
 
 // ✅ Catch-all route to handle SPA refresh
-app.get("/*", (req, res) => {
+// ✅ Handles all non-API routes in Express v5
+app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
+
 
 // 🌍 Start server
 const PORT = process.env.PORT || 5000;
