@@ -21,9 +21,11 @@ const app = express();
 // 🧱 Middleware
 app.use(cors({
   origin: [
-    "https://heal-sync-ai-full-sot7.vercel.app",
-    "http://localhost:5173"
-  ],
+  "https://heal-sync-ai-full.vercel.app",
+  "https://heal-sync-ai-full-sot7.vercel.app",
+  "http://localhost:5173"
+]
+,
   credentials: true
 }));
 
