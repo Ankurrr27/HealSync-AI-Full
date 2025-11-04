@@ -19,7 +19,11 @@ dotenv.config();
 const app = express();
 
 // 🧱 Middleware
-app.use(cors());
+app.use(cors({
+  origin: ["https://healsync.vercel.app", "http://localhost:5173"], // replace with your real vercel domain
+  credentials: true
+}));
+
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
