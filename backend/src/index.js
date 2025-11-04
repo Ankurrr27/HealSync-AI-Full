@@ -34,6 +34,7 @@ app.use("/api/medicines", medicineRoutes);
 
 
 // 🌍 Start server
-app.listen(5000, () =>
-  console.log("🚀 Server running on http://localhost:5000")
-);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
