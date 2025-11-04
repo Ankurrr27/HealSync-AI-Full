@@ -9,7 +9,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Uploads (if you don't want to commit user files)
-uploads/
+
 
 # OS files
 .DS_Store
