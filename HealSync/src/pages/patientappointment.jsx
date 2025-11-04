@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiStar } from "react-icons/fi";
 import { useOutletContext } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:5000/api";
-const STATIC_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const STATIC_BASE_URL = "https://healsync-ai-full.onrender.com";
+
 
 const PatientAppointment = () => {
   const { custom_id } = useOutletContext();

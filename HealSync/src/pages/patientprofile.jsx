@@ -4,8 +4,9 @@ import { useParams } from "react-router-dom";
 import { FaUserCircle, FaSave } from "react-icons/fa";
 import { FiCamera } from "react-icons/fi";
 
-const API_BASE = "http://localhost:5000/api/profile";
-const UPLOADS_BASE_URL = "http://localhost:5000/";
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/profile`;
+const UPLOADS_BASE_URL = "https://healsync-ai-full.onrender.com/";
+
 
 const PatientProfile = () => {
   const { custom_id } = useParams();

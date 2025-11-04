@@ -4,7 +4,8 @@ import { useParams } from "react-router-dom";
 import { FaUserMd, FaSave } from "react-icons/fa";
 import { FiCamera } from "react-icons/fi";
 
-const API_BASE = "http://localhost:5000/api/doctor";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 
 const DoctorProfile = () => {
   const { custom_id } = useParams();
