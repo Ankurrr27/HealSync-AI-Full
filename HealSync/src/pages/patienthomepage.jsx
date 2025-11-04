@@ -11,8 +11,9 @@ import {
   Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
-const API_BASE_URL = "http://localhost:5000/api"; // For API calls
-const STATIC_BASE_URL = "http://localhost:5000"; // For images
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const STATIC_BASE_URL = "https://healsync-ai-full.onrender.com";
+
 
 // Reusable Info Card
 const InfoCard = ({

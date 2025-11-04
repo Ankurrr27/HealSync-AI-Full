@@ -8,6 +8,9 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const Navbar = () => {
   const [customId, setCustomId] = useState(null);
   const [role, setRole] = useState(null);
@@ -32,9 +35,9 @@ const Navbar = () => {
   const fetchProfilePic = async (custom_id, role, user) => {
     try {
       const apiUrl =
-        role === "doctor"
-          ? `http://localhost:5000/api/doctor/${custom_id}`
-          : `http://localhost:5000/api/profile/${custom_id}`;
+  role === "doctor"
+    ? `${API_BASE}/doctor/${custom_id}`
+    : `${API_BASE}/profile/${custom_id}`;
 
       const res = await axios.get(apiUrl);
       const data = res.data;
@@ -42,7 +45,8 @@ const Navbar = () => {
       if (data?.profile_image) {
         const imgUrl = data.profile_image.startsWith("http")
           ? data.profile_image
-          : `http://localhost:5000/${data.profile_image}`;
+          : `${API_BASE.replace('/api', '')}/${data.profile_image}`
+;
         setProfilePic(imgUrl);
         localStorage.setItem("user", JSON.stringify({ ...user, profilePic: imgUrl }));
       } else {
