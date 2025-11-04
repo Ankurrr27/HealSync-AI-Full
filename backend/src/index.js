@@ -20,9 +20,13 @@ const app = express();
 
 // 🧱 Middleware
 app.use(cors({
-  origin: ["https://healsync.vercel.app", "http://localhost:5173"], // replace with your real vercel domain
+  origin: [
+    "https://heal-sync-ai-full-sot7.vercel.app",
+    "http://localhost:5173"
+  ],
   credentials: true
 }));
+
 
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
