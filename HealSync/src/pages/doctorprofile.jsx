@@ -31,7 +31,7 @@ const DoctorProfile = () => {
     if (!custom_id) return;
 
     axios
-      .get(`${API_BASE}/${custom_id}`)
+      .get(`${API_BASE}/doctor/${custom_id}`)
       .then((res) => {
         setProfile(res.data);
         setIsLoading(false);
@@ -90,7 +90,8 @@ const handleSubmit = async (e) => {
   const getProfileImageSrc = () => {
     if (!profile.profile_image) return null;
     if (profile.profile_image.startsWith("blob:")) return profile.profile_image;
-    return `http://localhost:5000/${profile.profile_image}`;
+   return `https://healsync-ai-full.onrender.com/${profile.profile_image}`;
+
   };
 
   if (isLoading) {

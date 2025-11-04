@@ -150,7 +150,8 @@ export const upsertProfile = async (req, res) => {
       ]
     );
 
-    const baseURL = "http://localhost:5000";
+const baseURL = process.env.BASE_URL || "https://healsync-ai-full.onrender.com";
+
     const profile_url = profile_image
       ? `${baseURL}/${profile_image.replace(/\\/g, "/")}`
       : null;
