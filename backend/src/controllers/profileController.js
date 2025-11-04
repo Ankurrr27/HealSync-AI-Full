@@ -41,7 +41,8 @@ export const getProfile = async (req, res) => {
     }
 
     const profile = rows[0];
-    const baseURL = "http://localhost:5000";
+const baseURL = process.env.BASE_URL || "https://healsync-ai-full.onrender.com";
+
     profile.profile_url = profile.profile_image
       ? `${baseURL}/${profile.profile_image.replace(/\\/g, "/")}`
       : null;
