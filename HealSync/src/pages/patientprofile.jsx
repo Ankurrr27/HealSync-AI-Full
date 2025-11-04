@@ -89,7 +89,7 @@ const PatientProfile = () => {
     }
 
     try {
-      await axios.post(`${API_BASE}/${custom_id}/update`, formData, {
+      await axios.post(`${API_BASE}/${custom_id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
