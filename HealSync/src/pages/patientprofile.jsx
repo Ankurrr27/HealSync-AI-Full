@@ -5,7 +5,9 @@ import { FaUserCircle, FaSave } from "react-icons/fa";
 import { FiCamera } from "react-icons/fi";
 
 const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/profile`;
-const UPLOADS_BASE_URL = "https://healsync-ai-full.onrender.com/";
+const UPLOADS_BASE_URL = "https://healsync-ai-full.onrender.com/uploads/";
+
+
 
 
 const PatientProfile = () => {
@@ -89,12 +91,12 @@ const PatientProfile = () => {
     }
 
     try {
-      await axios.post(`${API_BASE}/${custom_id}`, formData, {
+      await axios.post(`${API_BASE}/${custom_id}/update`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       // 🔄 Refresh profile after saving
-      const res = await axios.get(`${API_BASE}/${custom_id}`);
+      const res = await axios.get(`${API_BASE}/profile/${custom_id}`);
       const updatedData = res.data;
 
       if (updatedData.profile_image && !updatedData.profile_image.startsWith("http")) {

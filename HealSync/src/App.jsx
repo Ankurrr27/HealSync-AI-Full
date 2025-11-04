@@ -25,6 +25,7 @@ import Doctorappointment from "./pages/doctorappointment.jsx";
 import AI from "./pages/ai.jsx";
 import PostureCorrector from "./pages/postureCorrector.jsx";
 import Notifications from "./pages/notification.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 // Layout handles Navbar/Footer visibility
 function Layout() {
@@ -64,15 +65,21 @@ function App() {
     <Router>
       <Routes>
         <Route element={<Layout />}>
-          {/* Public Routes */}
+          {/* --- Public Routes --- */}
           <Route path="/" element={<WelcomePage />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/ai" element={<AI />} />
 
-
-          {/* Patient-specific routes */}
-          <Route path="/patient/:custom_id" element={<UserLayout />}>
+          {/* --- Protected Patient Routes --- */}
+          <Route
+            path="/patient/:custom_id"
+            element={
+              <ProtectedRoute>
+                <UserLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<PatientHomepage />} />
             <Route path="profile" element={<PatientProfile />} />
             <Route path="records" element={<PatientRecords />} />
@@ -80,11 +87,17 @@ function App() {
             <Route path="ai" element={<AI />} />
             <Route path="posturecorrector" element={<PostureCorrector />} />
             <Route path="notification" element={<Notifications />} />
-
           </Route>
 
-          {/* Doctor-specific routes */}
-          <Route path="/doctor/:custom_id" element={<UserLayout />}>
+          {/* --- Protected Doctor Routes --- */}
+          <Route
+            path="/doctor/:custom_id"
+            element={
+              <ProtectedRoute>
+                <UserLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<Doctorhomepage />} />
             <Route path="profile" element={<Doctorprofile />} />
             <Route path="ai" element={<AI />} />

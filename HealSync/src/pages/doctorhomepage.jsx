@@ -13,7 +13,9 @@ import {
   EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 
 
 const SummaryCard = ({
@@ -131,11 +133,11 @@ const DoctorHomepage = () => {
     const fetchData = async () => {
       try {
         const profileRes = await axios.get(
-          `${API_BASE_URL}/api/doctor/${custom_id}`
+          `${API_BASE_URL}/doctor/${custom_id}`
         );
         setDoctor(profileRes.data || {});
         const apptRes = await axios.get(
-          `${API_BASE_URL}/api/appointments/doctor/${custom_id}`
+          `${API_BASE_URL}/appointments/doctor/${custom_id}`
         );
         setAppointments(apptRes.data || []);
       } catch (err) {
