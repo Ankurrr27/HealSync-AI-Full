@@ -67,33 +67,41 @@ const DoctorCard = ({ doctor }) => (
           : "https://cdn-icons-png.flaticon.com/512/3774/3774299.png"
       }
       alt={doctor.full_name}
-      className="w-20 h-20 rounded-full border-2 border-indigo-100 object-cover"
+      className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-indigo-100 object-cover"
     />
 
     <div className="flex-1">
-      <h3 className="text-lg font-bold text-gray-800">{doctor.full_name}</h3>
-      <p className="text-sm text-gray-500">
+      <h3 className="text-base sm:text-lg font-bold text-gray-800">
+        {doctor.full_name}
+      </h3>
+
+      <p className="text-xs sm:text-sm text-gray-500">
         {doctor.specialization || "General Practitioner"}
       </p>
-      <p className="text-xs text-gray-600">
-        🏥 {doctor.clinic_address || doctor.location || "Address not available"}
-      </p>
-      <p className="text-xs text-gray-400 mt-1">
-        Next Appointment:{" "}
-        {doctor.next_appointment_date
-          ? new Date(doctor.next_appointment_date).toLocaleDateString()
-          : "N/A"}
-      </p>
+
+      {/* Hide below info on mobile */}
+      <div className="hidden sm:block">
+        <p className="text-xs text-gray-600">
+          🏥 {doctor.clinic_address || doctor.location || "Address not available"}
+        </p>
+        <p className="text-xs text-gray-400 mt-1">
+          Next Appointment:{" "}
+          {doctor.next_appointment_date
+            ? new Date(doctor.next_appointment_date).toLocaleDateString()
+            : "N/A"}
+        </p>
+      </div>
     </div>
 
     <Link
       to={`/doctor/${doctor.custom_id}`}
       className="text-indigo-600 font-semibold hover:underline text-sm"
     >
-      View Profile
+      View
     </Link>
   </div>
 );
+
 
 const PatientHomepage = () => {
   const { custom_id } = useOutletContext();
