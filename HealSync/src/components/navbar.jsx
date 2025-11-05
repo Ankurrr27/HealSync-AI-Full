@@ -58,13 +58,15 @@ const Navbar = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    setCustomId(null);
-    setRole(null);
-    setProfilePic(null);
-    window.location.href = "/login";
+ const handleLogout = () => {
+  localStorage.removeItem("token");
+  window.history.pushState(null, null, window.location.href);
+  window.onpopstate = () => {
+    window.location.href = "/";
   };
+  window.location.href = "/login"; // or navigate("/login")
+};
+
 
   const authPaths = ["/", "/login", "/signup"];
   const isAuthPage = authPaths.includes(location.pathname);
