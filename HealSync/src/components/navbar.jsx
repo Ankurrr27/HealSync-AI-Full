@@ -64,7 +64,7 @@ const Navbar = () => {
   window.onpopstate = () => {
     window.location.href = "/";
   };
-  window.location.href = "/login"; // or navigate("/login")
+  window.location.href = "/"; // or navigate("/login")
 };
 
 
