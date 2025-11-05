@@ -307,7 +307,7 @@ const PatientHomepage = () => {
       <div className="bg-white p-5 md:p-8 rounded-2xl shadow-xl border-t-4 border-indigo-600 flex justify-between items-start animate-fadeIn">
         <div className="flex flex-col">
           <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800">
-            Hello, <span className="text-indigo-700">{name}</span>
+            Hello, <div className="text-indigo-700">{name}</div>
           </h1>
           <p className="text-sm text-gray-500 mt-1">
             Your Personal Health Dashboard
@@ -394,42 +394,65 @@ const PatientHomepage = () => {
       )}
 
       {/* Summary Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 animate-fadeIn">
-        {summaryData.map((item, idx) => (
-          <Link
-            key={idx}
-            to={item.to}
-            className={`block ${item.bg} p-4 rounded-xl border border-gray-200 shadow hover:shadow-lg transition transform hover:-translate-y-1`}
-          >
-            <div className="flex justify-between items-center">
-              <item.icon className={`w-6 h-6 ${item.color}`} />
-              <p className="text-[10px] font-semibold text-gray-600 uppercase">
-                {item.label}
-              </p>
-            </div>
-            <div className="mt-2 border-t pt-2 border-gray-200 flex items-baseline">
-              <span className={`text-2xl font-bold ${item.color}`}>
-                {item.value}
-              </span>
-              {item.unit && (
-                <span className="text-xs text-gray-500 ml-1">{item.unit}</span>
-              )}
-            </div>
-            {item.description && (
-              <p className="text-xs text-gray-500 mt-1 truncate">
-                {item.description}
-              </p>
-            )}
-          </Link>
-        ))}
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 animate-fadeIn">
+  {summaryData.map((item, idx) => (
+    <Link
+      key={idx}
+      to={item.to}
+      className={`block ${item.bg} p-3 md:p-4 rounded-xl border border-gray-200 shadow hover:shadow-lg transition transform hover:-translate-y-1`}
+    >
+      <div className="flex justify-between items-center">
+        <item.icon className={`w-5 md:w-6 h-5 md:h-6 ${item.color}`} />
+        <p className="text-[9px] md:text-[10px] font-semibold text-gray-600 uppercase truncate">
+          {item.label}
+        </p>
       </div>
+      <div className="mt-1 md:mt-2 border-t pt-1 md:pt-2 border-gray-200 flex items-baseline">
+        <span className={`text-xl md:text-2xl font-bold ${item.color}`}>
+          {item.value}
+        </span>
+        {item.unit && (
+          <span className="text-[10px] md:text-xs text-gray-500 ml-1">
+            {item.unit}
+          </span>
+        )}
+      </div>
+      {item.description && (
+        <p className="text-[9px] md:text-xs text-gray-500 mt-1 truncate md:block hidden">
+          {item.description}
+        </p>
+      )}
+    </Link>
+  ))}
+</div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 animate-fadeIn">
-        {quickActions.map((action, idx) => (
-          <ActionButton key={idx} {...action} />
-        ))}
-      </div>
+
+    {/* Quick Actions */}
+{/* Quick Actions */}
+<div className="mt-6 animate-fadeIn">
+  {/* Mobile version: icons only */}
+  <div className="flex justify-between gap-2 md:hidden">
+    {quickActions.map((action, idx) => (
+      <button
+        key={idx}
+        onClick={() => {}}
+        className="bg-white p-3 rounded-xl shadow hover:shadow-lg flex items-center justify-center"
+        title={action.label} // tooltip on hover
+      >
+        <action.icon className={`w-6 h-6 ${action.color}`} />
+      </button>
+    ))}
+  </div>
+
+  {/* Desktop version: full buttons */}
+  <div className="hidden md:grid md:grid-cols-4 gap-4">
+    {quickActions.map((action, idx) => (
+      <ActionButton key={idx} {...action} />
+    ))}
+  </div>
+</div>
+
+
     </div>
   );
 };

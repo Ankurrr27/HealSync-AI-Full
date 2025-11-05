@@ -179,39 +179,68 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      {mobileOpen && !isAuthPage && customId && role && (
-        <div className="absolute right-4 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-xl p-3 flex flex-col items-start space-y-1 text-sm">
-          <Link to={`/${role}/${customId}/`} className={navLinkClass}>
-            Dashboard
-          </Link>
-          {role === "patient" && (
-            <Link to={`/${role}/${customId}/records`} className={navLinkClass}>
-              Records
-            </Link>
-          )}
-          <Link to={`/${role}/${customId}/appointments`} className={navLinkClass}>
-            Appointments
-          </Link>
-          <Link to={`/${role}/${customId}/ai`} className={navLinkClass}>
-            AI
-          </Link>
-          {role === "patient" && (
-            <Link to={`/${role}/${customId}/notification`} className={navLinkClass}>
-              Notification
-            </Link>
-          )}
-          <hr className="w-full border-gray-200 my-1" />
-          <Link to={`/${role}/${customId}/profile`} className={navLinkClass}>
-            Profile
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="w-full text-left text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-md transition"
-          >
-            Logout
-          </button>
-        </div>
-      )}
+      {/* Mobile Menu */}
+{mobileOpen && !isAuthPage && customId && role && (
+  <div className="absolute right-4 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-xl p-3 flex flex-col items-start space-y-1 text-sm">
+    <Link
+      to={`/${role}/${customId}/`}
+      className={navLinkClass}
+      onClick={() => setMobileOpen(false)}
+    >
+      Dashboard
+    </Link>
+    {role === "patient" && (
+      <Link
+        to={`/${role}/${customId}/records`}
+        className={navLinkClass}
+        onClick={() => setMobileOpen(false)}
+      >
+        Records
+      </Link>
+    )}
+    <Link
+      to={`/${role}/${customId}/appointments`}
+      className={navLinkClass}
+      onClick={() => setMobileOpen(false)}
+    >
+      Appointments
+    </Link>
+    <Link
+      to={`/${role}/${customId}/ai`}
+      className={navLinkClass}
+      onClick={() => setMobileOpen(false)}
+    >
+      AI
+    </Link>
+    {role === "patient" && (
+      <Link
+        to={`/${role}/${customId}/notification`}
+        className={navLinkClass}
+        onClick={() => setMobileOpen(false)}
+      >
+        Notification
+      </Link>
+    )}
+    <hr className="w-full border-gray-200 my-1" />
+    <Link
+      to={`/${role}/${customId}/profile`}
+      className={navLinkClass}
+      onClick={() => setMobileOpen(false)}
+    >
+      Profile
+    </Link>
+    <button
+      onClick={() => {
+        handleLogout();
+        setMobileOpen(false);
+      }}
+      className="w-full text-left text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-md transition"
+    >
+      Logout
+    </button>
+  </div>
+)}
+
 
       {/* Mobile Auth Buttons for Welcome Page */}
       {mobileOpen && isAuthPage && (
