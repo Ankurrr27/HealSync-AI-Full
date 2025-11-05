@@ -42,8 +42,11 @@ const PatientProfile = () => {
 
         // 🧩 Fix: Ensure profile image has correct URL
         if (data.profile_image && !data.profile_image.startsWith("http")) {
-          data.profile_image = `${UPLOADS_BASE_URL}${data.profile_image}`;
-        }
+  // remove any leading "uploads/" just to be safe
+  const cleanPath = data.profile_image.replace(/^uploads\//, "");
+  data.profile_image = `${UPLOADS_BASE_URL}${cleanPath}`;
+}
+
 
         setProfile(data);
         setIsLoading(false);

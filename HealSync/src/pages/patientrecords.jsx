@@ -146,13 +146,15 @@ const PatientRecords = () => {
 
                   <div className="flex gap-2 mt-4">
                     <a
-                      href={`http://localhost:5000/${r.file_path}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 text-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-indigo-200 transition"
-                    >
-                      Open
-                    </a>
+  href={`${API_BASE_URL.replace("/api", "")}/${r.file_path}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="flex-1 text-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-indigo-200 transition"
+>
+  Open
+</a>
+
+                      
                   </div>
                 </div>
               ))}
