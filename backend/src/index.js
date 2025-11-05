@@ -45,7 +45,7 @@ app.use("/api/reminders", reminderRoutes);
 app.use("/api/medicines", medicineRoutes);
 
 // ✅ Serve frontend (React + Vite build)
-const frontendPath = path.join(__dirname, "dist"); // or "../client/dist" if kept outside backend folder
+const frontendPath = path.join(__dirname, "../HealSync/dist"); // or "../client/dist" if kept outside backend folder
 app.use(express.static(frontendPath));
 
 // ✅ Catch-all route to handle SPA refresh
