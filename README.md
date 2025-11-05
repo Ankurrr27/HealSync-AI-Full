@@ -7,10 +7,13 @@
 ## 🌟 Features
 
 ### Patient Features
-- **📄 Profile Management** – Update personal details and upload profile pictures.
-- **🩺 Medical Records** – View health records, prescriptions, and test results.
-- **📅 Appointments** – Book, reschedule, and cancel appointments with doctors.
-- **🤖 AI Assistant** – HealSync AI for health-related questions and guidance.
+- **📄 Profile Management** – Update personal details and upload profile pictures.  
+- **🩺 Medical Records** – View health records, prescriptions, and test results.  
+- **📅 Appointments** – Book, reschedule, and cancel appointments with doctors.  
+- **💊 Medicine Reminder** – Set reminders for medications and health routines.  
+- **🧍‍♂️ Posture Corrector** – Track and improve your posture with smart guidance.  
+- **🤖 Heal Singh AI** – Ask questions and get personalized health assistance.  
+
 
 ### Doctor Features
 - **🧑‍⚕️ Dashboard** – Overview of all patients and scheduled appointments.
