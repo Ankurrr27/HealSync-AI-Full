@@ -99,7 +99,7 @@ const PatientProfile = () => {
       });
 
       // 🔄 Refresh profile after saving
-      const res = await axios.get(`${API_BASE}/profile/${custom_id}`);
+      const res = await axios.get(`${API_BASE}/${custom_id}`);
       const updatedData = res.data;
 
       if (updatedData.profile_image && !updatedData.profile_image.startsWith("http")) {
