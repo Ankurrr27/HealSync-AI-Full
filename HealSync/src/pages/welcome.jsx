@@ -118,14 +118,7 @@ const WelcomePage = () => {
       link: "/login",
       colorClass: { iconBg: "bg-green-600" },
     },
-    {
-      title: "System Administrator",
-      description:
-        "Admins manage users, billing audits, and maintain system security.",
-      icon: AdminIcon,
-      link: "/login",
-      colorClass: { iconBg: "bg-gray-800" },
-    },
+    
   ];
 
   return (

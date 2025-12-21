@@ -111,28 +111,7 @@ const Signup = () => {
                   </span>
                 </div>
 
-                {/* Admin */}
-                <div
-                  onClick={() => setRole("admin")}
-                  className={`flex-1 p-3 text-center rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                    role === "admin"
-                      ? "border-red-600 bg-red-50 shadow-md"
-                      : "border-gray-300 hover:border-red-400 bg-white"
-                  }`}
-                >
-                  <KeyIcon
-                    className={`w-6 h-6 mx-auto mb-1 ${
-                      role === "admin" ? "text-red-600" : "text-gray-500"
-                    }`}
-                  />
-                  <span
-                    className={`text-sm font-semibold ${
-                      role === "admin" ? "text-red-700" : "text-gray-700"
-                    }`}
-                  >
-                    Admin
-                  </span>
-                </div>
+               
 
                 {/* Doctor */}
                 <div
