@@ -163,8 +163,7 @@ const WelcomePage = () => {
                   <span className="text-gray-900">Heal</span>Sync
                 </h1>
                 <p className="text-xs sm:text-lg md:text-xl text-gray-600 mt-4 px-4 sm:px-6 md:px-0 font-medium max-w-2xl text-center md:text-left leading-relaxed">
-                  A secure platform that unifies patient care, operations, and
-                  efficiency — making healthcare smarter and more personal.
+                  A secure digital platform that brings patient care and healthcare operations together, improving efficiency while delivering smarter, more personal experiences
                 </p>
               </div>
 
@@ -221,7 +220,7 @@ const WelcomePage = () => {
           </motion.h2>
 
           <motion.div
-            className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+            className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
