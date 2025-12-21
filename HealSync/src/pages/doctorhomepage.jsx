@@ -13,10 +13,8 @@ import {
   EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-
+const IMAGE_BASE = API_BASE_URL.replace("/api", "");
 
 const SummaryCard = ({
   label,
@@ -82,7 +80,13 @@ const DoctorProfileCard = ({ doctor }) => (
       <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-2 border-indigo-100 flex items-center justify-center shadow-sm">
         {doctor.profile_image ? (
           <img
-            src={`${API_BASE_URL}/${doctor.profile_image}`}
+            src={
+              doctor.profile_image
+                ? doctor.profile_image.startsWith("http")
+                  ? doctor.profile_image
+                  : `${IMAGE_BASE}/${doctor.profile_image}`
+                : ""
+            }
             alt="Doctor"
             className="w-full h-full object-cover"
           />
@@ -195,8 +199,6 @@ const DoctorHomepage = () => {
           <h3 className="text-xl font-bold text-gray-800">
             Upcoming Appointments
           </h3>
-        
-         
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {appointments.length > 0 ? (
