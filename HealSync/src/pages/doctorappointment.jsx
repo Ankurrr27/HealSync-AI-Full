@@ -12,7 +12,7 @@ import {
   HeartIcon,
 } from "@heroicons/react/24/outline";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
 const DoctorAppointment = () => {
@@ -23,7 +23,7 @@ const DoctorAppointment = () => {
 
   const fetchAppointments = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/doctor/${custom_id}`);
+      const res = await axios.get(`${API_BASE_URL}/appointments/doctor/${custom_id}`);
       const sortedAppointments = res.data.sort(
         (a, b) => new Date(a.appointment_date) - new Date(b.appointment_date)
       );
@@ -41,7 +41,7 @@ const DoctorAppointment = () => {
       return alert("Select date/time before confirming");
 
     try {
-      await axios.patch(`${API_BASE_URL}/${id}`, { status, appointment_date });
+      await axios.patch(`${API_BASE_URL}/appointments/${id}`, { status, appointment_date });
       fetchAppointments();
     } catch (err) {
       console.error(err);
@@ -50,8 +50,9 @@ const DoctorAppointment = () => {
   };
 
   useEffect(() => {
+    if (!custom_id) return;
     fetchAppointments();
-  }, []);
+  }, [custom_id]);
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -91,7 +92,7 @@ const DoctorAppointment = () => {
               {/* Patient Info */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1 w-full">
                 <img
-                  src={`http://localhost:5000/${appt.patient_photo}`}
+                  src={`${API_BASE_URL}/${appt.patient_photo}`}
                   alt={appt.patient_name || "Patient"}
                   className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover shadow-md border border-blue-300"
                 />
